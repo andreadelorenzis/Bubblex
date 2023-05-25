@@ -1,0 +1,28 @@
+# Dependencies
+**/node_modules/
+**/npm-debug.log
+**/yarn-error.log
+**/.pnp
+**/*.pnp.js
+
+# testing
+**/coverage
+
+# Build output
+**/dist/
+**/build/
+
+# Environment variables
+**/.env
+
+# IDE and editor files
+**/.idea/
+**/.vscode/
+**/*.sublime-project
+**/*.sublime-workspace
+
+# Log files
+**/*.log
+
+# Mac OS
+**/.DS_Store

@@ -57,6 +57,10 @@ const getAllChatByIdGroup = async (req: Request, res: Response, next: NextFuncti
     }
 };
 
+/* const initConnection = (req: Request, res: Response, next: NextFunction) => {
+    
+}  */
+
 module.exports = {
     getAllChats,
     createChat,

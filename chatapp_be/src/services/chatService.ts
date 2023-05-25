@@ -1,4 +1,7 @@
 import { Chat, IChat, chatDAL } from "../models/Chat";
+import { Server, Socket } from 'socket.io';
+
+let io: Server;
 
 const createChat = async (chatData: any) => {
     try {
@@ -66,6 +69,14 @@ const getAllChatByIdGroup = async (groupId: any) => {
         throw error;
     }
 };
+
+/* const initSocketConnection = (server) => {
+    io = new Server(server, {
+        cors: {
+            origin: "http://localhost:3000",
+        }
+    });
+}; */
 
 module.exports = {
     createChat,

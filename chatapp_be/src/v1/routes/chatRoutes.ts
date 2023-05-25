@@ -7,6 +7,8 @@ router.get('/', chatController.getAllChats);
 
 router.get('/:id', chatController.getChatById);
 
+/* router.get('connection', chatController.initConnection); */
+
 router.post('/', chatController.createChat);
 
 router.put('/:id', chatController.updateChatById);
