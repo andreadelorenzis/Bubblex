@@ -39,15 +39,6 @@ async function updateGroupById(groupId: any, updatedGroupData: any) {
     }
 }
 
-async function getAllGroupChats(groupId: any) {
-    try {
-        const result = await Group.findById(groupId).populate('chats');
-        return result?.get('chats') || [];
-    } catch (error) {
-        throw new Error("Unable to fetch the chats of object Group")
-    }
-}
-
 async function getAllGroupMembers(groupId: any) {
     try {
         const result = await Group.findById(groupId).populate('members');
@@ -57,4 +48,10 @@ async function getAllGroupMembers(groupId: any) {
     }
 }
 
-module.exports = { createGroup, getAllGroups, getGroupById, updateGroupById, getAllGroupChats, getAllGroupMembers };
+export const groupService = {
+    createGroup,
+    getAllGroups,
+    getGroupById,
+    updateGroupById,
+    getAllGroupMembers
+};

@@ -16,13 +16,17 @@ import SimplePeer from "simple-peer";
  * il peer con che ha appena accettato la connessione, e accettare il segnale di ritorno, e ciò completa l'handshake.
  */
 
-const Video = ({ peerID, stream }: any) => {
+const Video = ({ peerID, stream, addVideoRef }: any) => {
     const ref: any = useRef();
 
     useEffect(() => {
         console.log("Setted the stream for " + peerID);
         ref.current.srcObject = stream;
     }, [stream]);
+
+    useEffect(() => {
+        addVideoRef(ref);
+    }, []);
 
     return (
         <video className="video" playsInline autoPlay ref={ref}></video>
@@ -37,15 +41,19 @@ const videoConstraints = {
 const Room = ({ socket }: any) => {
     const [peers, setPeers] = useState<any[]>([]);
     const [remoteStreams, setRemoteStreams] = useState<any[]>([]);
+    const localStream: any = useRef();
     const userVideo: any = useRef();
     const remoteVideoRefs: any = useRef([]);
     const remotePeerRefs: any = useRef([]);
     const params: any = useParams();
     const roomID: string = params.roomID;
+    const senders: any = useRef([]);
+    const peerRef: any = useRef();
 
     useEffect(() => {
         navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false }).then((stream: any) => {
             userVideo.current.srcObject = stream;
+            localStream.current = stream;
             socket.emit("joinVideoRoom", roomID);
             socket.on("allUsers", (users: any[]) => {
                 console.log("Setting the stream for the existent participants");
@@ -154,15 +162,66 @@ const Room = ({ socket }: any) => {
         return peer;
     }
 
-    function findUserID() {
-    }
+    const shareVideo = (screenTrack: any) => {
+        navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false }).then((stream: any) => {
+            // Change local stream track
+            localStream.current = stream;
+            userVideo.current.srcObject = stream;
 
-    function setRemoteVideoStream(ref: any, stream: any) {
-        ref.current.srcObject = stream;
-    }
+            // Change remote stream tracks
+            const videoTrack: any = stream.getTracks()[0];
+            console.log(videoTrack)
+            peers.forEach((peerObj: any) => {
+                const peer: any = peerObj.peer;
+                const videoTracks = peer.streams[0].getVideoTracks();
+                console.log(videoTracks);
+                peer.replaceTrack(
+                    screenTrack,
+                    videoTrack,
+                    peer.streams[0]
+                );
+            });
+
+
+        });
+    };
+
+    const shareScreen = () => {
+        navigator.mediaDevices.getDisplayMedia().then((stream: any) => {
+            // Change local stream track
+            localStream.current = stream;
+            userVideo.current.srcObject = stream;
+
+            // Change remote stream tracks
+            const screenTrack: any = stream.getTracks()[0];
+            peers.forEach((peerObj: any) => {
+                const peer: any = peerObj.peer;
+                const videoTrack = peer.streams[0].getVideoTracks()[0];
+                console.log(peer.streams[0].getVideoTracks()[0]);
+                console.log(stream.getTracks())
+                peer.replaceTrack(
+                    videoTrack,
+                    screenTrack,
+                    peer.streams[0]
+                );
+
+            });
+
+            screenTrack.onended = function () {
+                shareVideo(screenTrack);
+            }
+
+        });
+    };
+
+    // Function to update the ref array with the new reference
+    const addVideoRef = (ref: any) => {
+        remoteVideoRefs.current.push(ref);
+    };
 
     return (
         <div className="container">
+            <button onClick={shareScreen}>Share screen</button>
             <div>
                 <h1>Video 1</h1>
                 <video className="video" ref={userVideo} autoPlay playsInline></video>
@@ -173,7 +232,7 @@ const Room = ({ socket }: any) => {
                 return (
                     <div key={uniqueKey}>
                         <h1>Video {index + 2}</h1>
-                        <Video stream={remoteStream}></Video>
+                        <Video stream={remoteStream} addVideoRef={addVideoRef}></Video>
                     </div>
                 );
             })}

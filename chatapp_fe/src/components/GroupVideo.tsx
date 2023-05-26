@@ -32,6 +32,7 @@ export default function GroupVideo({ socket }: any) {
     const [remoteStreams, setRemoteStreams] = useState<any[]>([]);
     const myVideoRef: any = useRef();
     const peerVideoRefs: any = useRef([]);
+    const senders: any = useRef([]);
 
 
     useEffect(() => {
@@ -128,6 +129,16 @@ export default function GroupVideo({ socket }: any) {
         setPeers(peersCopy);
     }
 
+    const shareScreen = () => {
+        navigator.mediaDevices.getDisplayMedia().then((stream: any) => {
+            const screenTrack = stream.getTracks()[0];
+            senders.current.find((sender: any) => sender.track.kind === 'video').replaceTrack(screenTrack);
+            screenTrack.onended = function () {
+                senders.current.find((sender: any) => sender.track.kind === "video").replaceTrack(myVideoRef.current.getTracks()[1]);
+            }
+        });
+    };
+
     /**
      * RTCPeerConnection configuration 
      */
@@ -175,6 +186,7 @@ export default function GroupVideo({ socket }: any) {
                     </div>
                 );
             })}
+            <button onClick={shareScreen}>Share screen</button>
         </div>
     )
 }

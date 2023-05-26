@@ -5,7 +5,6 @@ export interface IGroup extends Document {
     name: string;
     description?: string;
     members?: any;
-    chats?: any;
 }
 
 const groupSchema = new Schema<IGroup>({
@@ -28,13 +27,6 @@ const groupSchema = new Schema<IGroup>({
             },
             message: 'At least one member is required.'
         }
-    },
-    chats: {
-        type: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Chat'
-        }],
-        default: []
     }
 });
 

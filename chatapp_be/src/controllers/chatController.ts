@@ -57,16 +57,34 @@ const getAllChatByIdGroup = async (req: Request, res: Response, next: NextFuncti
     }
 };
 
-/* const initConnection = (req: Request, res: Response, next: NextFunction) => {
-    
-}  */
+const getChatDirectByPersonId = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const personId = req.params.id;
+        const chat = await chatService.getChatDirectByPersonId(req.myId, personId);
+        res.json(chat);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
+const getAllMyDirectChats = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const chats = await chatService.getAllMyDirectChats(req.myId);
+        res.json(chats);
+    } catch (error) {
+        next(error);
+    }
+}
 
 module.exports = {
     getAllChats,
     createChat,
     getChatById,
     updateChatById,
-    getAllChatByIdGroup
+    getAllChatByIdGroup,
+    getChatDirectByPersonId,
+    getAllMyDirectChats
 };
 
 export { };

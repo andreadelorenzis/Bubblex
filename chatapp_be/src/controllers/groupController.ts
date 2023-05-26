@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-
-const groupService = require('../services/groupService');
+import { groupService } from "../services/groupService";
 
 const getAllGroups = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -46,17 +45,6 @@ const updateGroupById = async (req: Request, res: Response, next: NextFunction) 
     }
 };
 
-const getAllGroupChats = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const groupId = req.params.id;
-        const chats = await groupService.getAllGroupChats(groupId);
-        res.json(chats);
-    } catch (error) {
-        console.error(error);
-        next(error);
-    }
-};
-
 const getAllGroupMembers = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const groupId = req.params.id;
@@ -68,5 +56,10 @@ const getAllGroupMembers = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-
-module.exports = { getAllGroups, createGroup, getGroupById, updateGroupById, getAllGroupChats, getAllGroupMembers }
+export const groupController = {
+    getAllGroups,
+    createGroup,
+    getGroupById,
+    updateGroupById,
+    getAllGroupMembers
+};

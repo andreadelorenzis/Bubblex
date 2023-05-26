@@ -17,23 +17,23 @@ export const initializeSocket = (io: any) => {
 
         console.log(`⚡:  ${socket.id} user just connected.`);
 
-
         socket.on('send_message', (data: any) => {
-            socket.to(data.room).emit("receive_message", data);
+            console.log("Message: " + data.message + "To room: " + data.room);
+            socket.to(data.room).emit("receive_message", data.message);
         });
 
         socket.on('join_room', (data: any) => {
-            /* socket.join(data); */
+            socket.join(data);
             console.log(`Room ${data} joined`)
         });
 
         socket.on("callUser", (data: any) => {
-            /* console.log("call user") */
+            console.log("call user")
             io.to(data.userToCall).emit('hey', { signal: data.signalData, from: data.from });
         });
 
         socket.on("acceptCall", (data: any) => {
-            /* console.log("Call accepted") */
+            console.log("Call accepted")
             io.to(data.to).emit('callAccepted', data.signal);
         });
 

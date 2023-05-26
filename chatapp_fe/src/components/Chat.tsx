@@ -1,4 +1,3 @@
-import { Socket } from 'socket.io-client';
 import React, { useState, useEffect, SetStateAction } from 'react';
 
 export default function Chat({ socket }: any) {
@@ -17,24 +16,19 @@ export default function Chat({ socket }: any) {
             setIsConnected(false);
         }
 
-        function onFooEvent(value: any) {
-            setReceiveEvents((previous: any) => [...previous, value]);
+        function onReceiveMessage(message: any) {
+            console.log(message)
+            setMessageReceived(message);
         }
 
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
-        socket.on('receive_message', onFooEvent);
-        socket.on('message', (message: any) => {
-            console.log(message);
-        });
-        socket.on('receive_message', (data: any) => {
-            setMessageReceived(data.message);
-        });
+        socket.on('receive_message', onReceiveMessage);
 
         return () => {
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);
-            socket.off('foo', onFooEvent);
+            socket.off('receive_message', onReceiveMessage);
         };
     }, []);
 

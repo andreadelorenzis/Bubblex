@@ -3,6 +3,7 @@ import { Schema, Model, model, connect } from 'mongoose';
 export interface IChat extends Document {
     name: string;
     description: string;
+    chatType: any;
     groupId: any;
     members: any;
 }
@@ -10,19 +11,31 @@ export interface IChat extends Document {
 const chatSchema = new Schema<IChat>({
     name: {
         type: String,
-        required: true
     },
     description: {
         type: String,
+    },
+    chatType: {
+        type: String,
+        enum: ['direct', 'group'],
         required: true
     },
     groupId: {
         type: Schema.Types.ObjectId
     },
-    members: [{
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-    }],
+    members: {
+        type: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Person'
+        }],
+        default: [],
+        validate: {
+            validator: function (members: any[]) {
+                return members.length > 0;
+            },
+            message: 'At least one member is required.'
+        }
+    },
 });
 
 export const chatDAL = {
@@ -45,11 +58,18 @@ export const chatDAL = {
             throw new Error('Failed to retrieve the chat');
         }
     },
-    createNewChat: async function (data: any) {
-        if (!data.name) {
-            throw new Error("Name of the chat is missing");
+    fetchChatDirectByPersonId: async function (personId: any) {
+        try {
+            const chat = await Chat.findOne({
+                chatType: 'direct',
+                members: { $in: [personId] }
+            }).exec();
+            return chat;
+        } catch (error) {
+            throw new Error('Failed to retrieve the chat');
         }
-
+    },
+    createNewChat: async function (data: any) {
         try {
             const newChat = await Chat.create(data);
             return newChat;

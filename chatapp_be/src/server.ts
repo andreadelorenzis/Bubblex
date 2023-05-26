@@ -1,6 +1,6 @@
 import express from 'express';
 import { initializeSocket } from './sockets/socketsHandler';
-import { uploadFile } from './utils/fileUtils';
+import { processImage, uploadFile } from './utils/fileUtils';
 import { Server, Socket } from 'socket.io';
 
 require('dotenv').config();
@@ -18,6 +18,7 @@ const v1ChatRouter = require('./v1/routes/chatRoutes');
 const v1MessageRouter = require('./v1/routes/messageRoutes');
 const v1PersonRouter = require('./v1/routes/personRoutes');
 const errorHandler = require('./errors/errorHandler');
+const globalUser = require('./utils/authUtils');
 
 const app = express();
 const server = http.createServer(app);
@@ -41,13 +42,14 @@ mongoose.connect(dbUrl, {
 /* app.use(express.static(path.join(__dirname, '../public'))); */
 app.use(cors());
 app.use(bodyParser.json());
-app.use(uploadFile);
+app.use(processImage);
+app.use(globalUser);
+app.use(errorHandler);
 app.use('/api/v1/users', v1UserRouter);
 app.use('/api/v1/groups', v1GroupRouter);
 app.use('/api/v1/chats', v1ChatRouter);
 app.use('/api/v1/messages', v1MessageRouter);
 app.use('/api/v1/people', v1PersonRouter);
-app.use(errorHandler);
 
 initializeSocket(io);
 

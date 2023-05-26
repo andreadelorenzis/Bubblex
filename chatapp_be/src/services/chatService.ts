@@ -33,6 +33,23 @@ const getChatById = async (chatId: any) => {
     }
 };
 
+const getChatDirectByPersonId = async (myId: any, personId: any) => {
+    try {
+        let chat = await chatDAL.fetchChatDirectByPersonId(personId);
+        if (chat === null) {
+            // Creo una nuova chat diretta con questa persona
+            const newChat: any = {
+                chatType: 'direct',
+                members: [myId, personId]
+            };
+            chat = await chatDAL.createNewChat(newChat);
+        }
+        return chat;
+    } catch (error) {
+        throw error;
+    }
+}
+
 const updateChatById = async (chatId: any, updatedChatData: any) => {
     try {
         const updatedChat = await chatDAL.updateChatById(chatId, updatedChatData);
@@ -47,28 +64,27 @@ const updateChatById = async (chatId: any, updatedChatData: any) => {
 
 const getAllChatByIdGroup = async (groupId: any) => {
     try {
-        const chats = await Chat.aggregate([
-            {
-                $lookup: {
-                    from: 'Group',
-                    localField: 'groupId',
-                    foreignField: '_id',
-                    as: 'groupChats'
-                }
-            },
-            {
-                $match: {
-                    "referencedDocument": {
-                        $ne: []
-                    }
-                }
-            }
-        ]);
+        const chats = await Chat.find({
+            groupId
+        }).exec();
         return chats;
     } catch (error) {
         throw error;
     }
 };
+
+const getAllMyDirectChats = async (myId: string) => {
+    try {
+        const chats = await Chat.find({
+            chatType: 'direct',
+            members: { $in: [myId] }
+        }).exec();
+        return chats;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
 
 /* const initSocketConnection = (server) => {
     io = new Server(server, {
@@ -78,10 +94,12 @@ const getAllChatByIdGroup = async (groupId: any) => {
     });
 }; */
 
-module.exports = {
+export const chatService = {
     createChat,
     getAllChats,
     getChatById,
     updateChatById,
-    getAllChatByIdGroup
+    getAllChatByIdGroup,
+    getChatDirectByPersonId,
+    getAllMyDirectChats
 };

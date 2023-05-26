@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-
-const messageService = require('../services/messageService');
+import { messageService } from "../services/messageService";
 
 const getAllMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -58,12 +57,37 @@ const fetchAllChatMessages = async (req: Request, res: Response, next: NextFunct
     }
 };
 
-module.exports = {
+const fetchAllFilesByChatId = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const chatId = req.params.id;
+        const fileURLs = await messageService.fetchAllFilesByChatId(chatId);
+        console.log(fileURLs)
+        res.json(fileURLs);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+}
+
+const fetchAllFilesByGroupId = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const groupId = req.params.id;
+        const fileURLs = await messageService.fetchAllFilesByGroupId(groupId);
+        res.json(fileURLs);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+}
+
+export const messageController = {
     getAllMessages,
     createNewMessage,
     getMessageById,
     updateMessageById,
-    fetchAllChatMessages
+    fetchAllChatMessages,
+    fetchAllFilesByChatId,
+    fetchAllFilesByGroupId
 };
 
 export { };
