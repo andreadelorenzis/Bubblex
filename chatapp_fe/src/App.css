@@ -62,3 +62,74 @@
   height: 40%;
   width: 50%;
 }
+
+button {
+  cursor: pointer;
+  border: none;
+}
+
+body,
+html,
+* {
+  box-sizing: border-box;
+}
+
+input,
+button,
+textarea,
+p,
+h1,
+h2,
+h3,
+span,
+ul,
+ol {
+  /* Resetting box-sizing to content-box */
+  box-sizing: border-box;
+
+  /* Resetting margins, paddings, and borders */
+  margin: 0;
+  padding: 0;
+  border: none;
+
+  /* Resetting font styles */
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+
+  /* Resetting background and text colors */
+  background-color: transparent;
+  color: inherit;
+
+  /* Resetting outline styles */
+  outline: none;
+
+  /* Resetting other styles as needed */
+  /* ... */
+}
+
+ul {
+  text-decoration: none;
+  list-style-type: none;
+}
+
+h1 {
+  font-size: 40px;
+}
+
+h2 {
+  font-size: 30px;
+}
+
+h3 {
+  font-size: 25px;
+}
+
+input {
+  width: 100%;
+  display: block;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 10px 0;
+}

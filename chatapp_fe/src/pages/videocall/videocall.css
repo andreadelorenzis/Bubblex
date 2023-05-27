@@ -1,0 +1,118 @@
+.videocall {
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.videocall__container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+    max-width: 935px;
+    margin-top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: all 0.3s ease;
+}
+
+.videocall__container--chat-active {
+    left: calc(50% - 200px);
+}
+
+.videocall__title {
+    margin: 10px;
+}
+
+.videocall__videos {
+    /* Adjust the maximum width of the container as needed */
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.videocall__videos__pinned {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.videocall__videos__not-pinned--grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Two equal columns */
+    grid-gap: 10px;
+    /* Adjust the gap between rectangles as needed */
+}
+
+.videocall__videos__not-pinned--row {
+    display: flex;
+    justify-content: center;
+}
+
+.videocall__videos__user-card {
+    position: relative;
+    background-color: black;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Set the desired aspect ratio (e.g., 1:1 for square, 16:9 for widescreen) */
+    aspect-ratio: 16/9;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.videocall__videos__user-card--active {
+    order: -1;
+}
+
+.videocall__videos__not-pinned--row>.videocall__videos__user-card {
+    margin: 0 5px;
+}
+
+.videocall__videos__not-pinned--row>.videocall__videos__user-card:first-child,
+.videocall__videos__not-pinned--row>.videocall__videos__user-card:last-child {
+    margin: 0;
+    /* Remove margin from first and last elements */
+}
+
+.videocall__videos__pinned>.videocall__videos__user-card {
+    max-width: 590px;
+}
+
+.videocall__user-card__name {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    background-color: gainsboro;
+}
+
+.videocall__buttons {
+    /* position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%); */
+}
+
+.videocall__buttons>button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin: 0 5px;
+    background-color: lightblue;
+}
+
+.chat {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 200px;
+    height: 100vh;
+    background: red;
+}

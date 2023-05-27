@@ -30,7 +30,7 @@ const messageSchema: Schema = new Schema<IMessage>({
     },
     contentType: {
         type: String,
-        enum: ['file', 'text', 'code'],
+        enum: ['file', 'text', 'code', 'poll'],
         required: true
     },
     textContent: {
@@ -57,9 +57,25 @@ const messageSchema: Schema = new Schema<IMessage>({
         question: {
             type: String
         },
-        options: [{
-            type: String
-        }]
+        options: {
+            type: [{
+                text: {
+                    type: String
+                },
+                voters: {
+                    type: [{
+                        type: Schema.Types.ObjectId,
+                        ref: 'Person',
+                    }],
+                    default: []
+                },
+            }],
+            default: []
+        },
+        votersNum: {
+            type: Number,
+            default: 0
+        }
     },
     videocall: {
         url: {

@@ -1,0 +1,113 @@
+.chat-collapse {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 400px;
+    height: 100vh;
+    transition: all 0.3s ease;
+    border: 1px solid black;
+}
+
+.chat-collapse--collapsed {
+    right: -400px;
+}
+
+.chat-collapse--collapsed .chat-collapse__input-bar {
+    right: -400px;
+}
+
+.chat-collapse__button {
+    position: absolute;
+    top: 10px;
+    left: -50px;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: lightblue;
+}
+
+.chat-collapse__button>span {
+    position: absolute;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    left: -3px;
+    bottom: -3px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-collapse__msg-container {
+    overflow-y: scroll;
+    margin-bottom: 50px;
+    margin-top: 20px;
+}
+
+.chat-collapse__input-bar {
+    position: relative;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    background-color: white;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 400px;
+    border: 1px solid black;
+    transition: all 0.3s ease;
+}
+
+.chat-collapse__input-bar__options-picker {
+    position: absolute;
+    bottom: 65px;
+    left: 0px;
+    border-radius: 8px;
+    background-color: white;
+    border: 1px solid #333;
+}
+
+.chat-collapse__input-bar__options-picker li {
+    padding: 15px 15px;
+    cursor: pointer;
+}
+
+.chat-collapse__input-bar__options-picker li:hover {
+    background-color: beige;
+    border-radius: 8px;
+}
+
+.chat-collapse__input-bar textarea {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 20px 10px;
+    border: none;
+    margin-left: 10px;
+    resize: none;
+}
+
+.chat-collapse__input-bar__emoji-picker {
+    position: absolute;
+    bottom: 50px;
+    left: 0px;
+}
+
+.fa-icon {
+    font-size: 40px;
+}
+
+/* Poll modal */
+.poll-modal__header {
+    display: flex;
+    align-items: center;
+}
+
+.poll-modal__header>h2 {
+    margin-left: 10px;
+}

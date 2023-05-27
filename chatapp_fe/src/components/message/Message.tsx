@@ -1,18 +1,21 @@
 import "./message.css";
 import { format } from "timeago.js";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUser } from '@fortawesome/free-solid-svg-icons'
 
-export default function Message({ message, own }: any) {
+export default function Message({ user, userColor, content }: any) {
     return (
-        <div className={own ? "message own" : "message"}>
-            <div className="messageTop">
-                <img
-                    className="messageImg"
-                    src="https://images.pexels.com/photos/3686769/pexels-photo-3686769.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500"
-                    alt=""
-                />
-                <p className="messageText">{message.text}</p>
+        <div className="message">
+            {!!user?.profileImg
+                ? <img className='message__img' src={user.profileImg} />
+                : <div className='message__icon' style={{ backgroundColor: userColor }}>
+                    <FontAwesomeIcon
+                        icon={faUser} style={{ fontSize: '20px' }} />
+                </div>}
+            <div>
+                <p className='message__name' style={{ fontWeight: 'bold' }}>{user.name}</p>
+                <p className='message__content'>{content}</p>
             </div>
-            <div className="messageBottom">{format(message.createdAt)}</div>
         </div>
     );
 }

@@ -5,13 +5,14 @@ import CreateRoom from './components/CreateRoom';
 import { BrowserRouter, Route, createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Chat from './components/Chat';
 import Messenger from './pages/messenger/Messenger';
+import Videocall from './pages/videocall/Videocall';
 
 function App() {
   const router = createBrowserRouter([
     {
       path: "/",
       index: true,
-      element: <Chat socket={socket} />,
+      element: <Videocall socket={socket} />,
     },
     /* {
       path: "/",
