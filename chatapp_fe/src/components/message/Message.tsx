@@ -10,10 +10,10 @@ export default function Message({ user, userColor, content }: any) {
                 ? <img className='message__img' src={user.profileImg} />
                 : <div className='message__icon' style={{ backgroundColor: userColor }}>
                     <FontAwesomeIcon
-                        icon={faUser} style={{ fontSize: '20px' }} />
+                        icon={faUser} style={{ fontSize: '15px', color: '#ffffff' }} />
                 </div>}
             <div>
-                <p className='message__name' style={{ fontWeight: 'bold' }}>{user.name}</p>
+                <p className='message__name' style={{ fontWeight: 'bold', color: userColor }}>{user.name}</p>
                 <p className='message__content'>{content}</p>
             </div>
         </div>

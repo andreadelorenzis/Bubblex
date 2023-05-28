@@ -1,12 +1,13 @@
 import { Schema, Model, model, connect } from 'mongoose';
 
 export interface IMessage extends Document {
-    chat: any;
     sender: any;
-    timestamp: Date;
+    chat?: any;
     contentType: string;
+    timestamp: Date;
     textContent: string;
     fileUrl?: string;
+    fileMetadata: any;
     codeSnippet?: string;
     position?: any;
     poll?: any;
@@ -14,30 +15,40 @@ export interface IMessage extends Document {
 }
 
 const messageSchema: Schema = new Schema<IMessage>({
-    chat: {
-        type: Schema.Types.ObjectId,
-        ref: 'Chat',
-        required: true
-    },
     sender: {
         type: Schema.Types.ObjectId,
         ref: 'Person',
         required: true
     },
-    timestamp: {
-        type: Date,
-        default: Date.now
+    chat: {
+        type: Schema.Types.ObjectId,
+        ref: 'Chat',
     },
     contentType: {
         type: String,
         enum: ['file', 'text', 'code', 'poll'],
         required: true
     },
+    timestamp: {
+        type: Date,
+        default: Date.now
+    },
     textContent: {
         type: String,
     },
     fileUrl: {
         type: String
+    },
+    fileMetadata: {
+        name: {
+            type: String,
+        },
+        size: {
+            type: String,
+        },
+        type: {
+            type: String
+        }
     },
     codeSnippet: {
         type: String

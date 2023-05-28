@@ -1,0 +1,39 @@
+.file-viewer {
+    position: absolute;
+    width: 100%;
+    height: 240px;
+    background-color: #3b3f41;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #d6d9dc;
+    transition: opacity 0.3s ease, bottom 0.3s ease;
+    z-index: -1;
+}
+
+.file-viewer--hide {
+    bottom: 0;
+}
+
+.file-viewer--show {
+    bottom: 67px;
+}
+
+.file-viewer__close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+.file-viewer__name {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.file-viewer__icon {}
+
+.file-viewer__type-size {
+    margin-top: 20px;
+}

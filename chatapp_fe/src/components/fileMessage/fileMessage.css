@@ -1,0 +1,36 @@
+.file-message {
+    display: flex;
+    flex-direction: column;
+    color: #0f79b6
+}
+
+.file-message__container {
+    padding: 15px;
+    align-items: center;
+    color: #d6d9dc;
+    background-color: #3b3f41;
+    display: flex;
+    margin: 0 5px;
+    border-radius: 8px;
+    margin-top: 6px;
+}
+
+.file-message__text__container {
+    margin-left: 20px;
+}
+
+.file-message__name {
+    font-weight: bold;
+}
+
+.file-message__upload {
+    margin-left: auto;
+}
+
+.file-message__upload>.icon {
+    color: #0f79b6;
+}
+
+.file-message__upload>.icon:hover {
+    color: #1c9dea;
+}

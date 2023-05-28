@@ -26,12 +26,12 @@ export default function PollMessage({ user, userColor, content, question, option
             <div className="poll-message__results">
                 <span className='poll-message__results__question'>{question}</span>
                 <div className="poll-message__options">
-                    {options.map((option: any) => {
+                    {options.map((option: any, index: any) => {
                         const text = option?.text;
                         const perc = calculatePercOption(option?.votes.length, countVoters());
 
                         return (
-                            <div className="poll-message__option__bar">
+                            <div key={index} className="poll-message__option__bar">
                                 <span className='poll-message__option__bar__perc'>{perc}%</span>
                                 <span className='poll-message__option__bar__text'>{text}</span>
                                 <div

@@ -2,13 +2,15 @@ import React, { ReactNode, useState } from 'react'
 import './videocall.css'
 import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser, faVideoCamera, faMicrophone, faShareFromSquare, faMessage, faPhoneSlash } from '@fortawesome/free-solid-svg-icons'
+import { faUser, faVideoCamera, faMicrophone, faShareFromSquare, faMessage, faPhoneSlash, faMicrophoneSlash, faVideoSlash } from '@fortawesome/free-solid-svg-icons'
 import ChatCollapsable from '../../components/chatCollapsable/ChatCollapsable'
 
 
 export default function Videocall({ socket }: any) {
     const [pinnedVideo, setPinnedVideo] = useState<any>(null);
     const [collapse, setCollapse] = useState<boolean>(true);
+    const [videoActive, setVideoActive] = useState<boolean>(true);
+    const [microphoneActive, setMicrophoneActive] = useState<boolean>(true);
 
     const handleVideoClick = (clickedVideoId: any) => {
         if (clickedVideoId === pinnedVideo) {
@@ -22,6 +24,14 @@ export default function Videocall({ socket }: any) {
 
     const handleCollapseClick = () => {
         setCollapse((collapse: boolean) => !collapse);
+    }
+
+    const handleVideoCameraBtnClick = () => {
+        setVideoActive(!videoActive);
+    }
+
+    const handleMicrophoneBtnClick = () => {
+        setMicrophoneActive(!microphoneActive);
     }
 
     const users = [
@@ -87,10 +97,15 @@ export default function Videocall({ socket }: any) {
                     </div>
                 </div>
                 <div className="videocall__buttons">
-                    <button><FontAwesomeIcon icon={faVideoCamera} /></button>
-                    <button><FontAwesomeIcon icon={faMicrophone} /></button>
-                    <button><FontAwesomeIcon icon={faShareFromSquare} /></button>
-                    <button><FontAwesomeIcon icon={faPhoneSlash} /></button>
+                    <button onClick={handleVideoCameraBtnClick} className={videoActive ? '' : 'videocall__buttons__button--inactive'}>
+                        <FontAwesomeIcon icon={videoActive ? faVideoCamera : faVideoSlash} className='icon' />
+                    </button>
+                    <button onClick={handleMicrophoneBtnClick} className={microphoneActive ? '' : 'videocall__buttons__button--inactive'}>
+                        <FontAwesomeIcon icon={microphoneActive ? faMicrophone : faMicrophoneSlash} className='icon' /></button>
+                    <button>
+                        <FontAwesomeIcon icon={faShareFromSquare} className='icon' />
+                    </button>
+                    <button className='videocall__buttons__phone-btn'><FontAwesomeIcon icon={faPhoneSlash} className='icon' /></button>
                 </div>
             </div>
             <ChatCollapsable collapse={collapse} onCollapse={handleCollapseClick} />
