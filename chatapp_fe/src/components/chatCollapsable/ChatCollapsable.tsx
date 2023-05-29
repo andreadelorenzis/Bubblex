@@ -13,6 +13,8 @@ import PollMessage from '../pollMessage/PollMessage'
 import FileViewer from '../fileViewer/FileViewer'
 import FileMessage from '../fileMessage/FileMessage'
 import { getTypeName, formatFileSize, getIconByType } from '../../utils/fileUtils'
+import CodeEditor from '../codeEditor/CodeEditor'
+import CodeMessage from '../codeMessage/CodeMessage'
 
 export default function ChatCollapsable({ collapse, onCollapse }: any) {
     const [users, setUsers] = useState<any[]>([]);
@@ -34,6 +36,7 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
         type: '',
         size: ''
     });
+    const [isCodeModalOpen, setIsCodeModalOpen] = useState<boolean>(false);
 
     const emojiPickerRef = useRef<any>(null);
     const optionsPickerRef = useRef<any>(null);
@@ -76,10 +79,12 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
                 question: 'Domanda?',
                 options: [
                     {
+                        id: 1,
                         text: 'Opzione 1',
-                        votes: [users[0], users[1]]
+                        votes: [users[1]]
                     },
                     {
+                        id: 2,
                         text: 'Opzione 2',
                         votes: [users[2], users[3]]
                     }
@@ -198,6 +203,10 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
         setIsPollModalOpen(!isPollModalOpen);
     }
 
+    const toggleCodeModalOpen = () => {
+        setIsCodeModalOpen(!isCodeModalOpen);
+    }
+
     const handleCollapseClick = () => {
         if (collapse) {
             setNewMessagesNotSeen(0);
@@ -233,6 +242,7 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
 
     const handleCodeSnippetClick = () => {
         setMessageOptionsOpened(false);
+        toggleCodeModalOpen();
     }
 
     const handlePollClick = () => {
@@ -276,13 +286,13 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
         setChosenFile(null);
     }
 
-    const sendPoll = (options: any) => {
+    const sendPoll = (data: any) => {
         const pollMessage = {
             sender: users[1],
             content: messageText,
             contentType: 'poll',
-            question: pollData?.question,
-            options: pollData?.options
+            question: data?.question,
+            options: data?.options
         }
         setMessages((prevMessages: any) => [...prevMessages, pollMessage]);
 
@@ -290,6 +300,11 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
 
         setMessageText("");
         setChosenFile(null);
+        setIsPollModalOpen(false);
+    }
+
+    const handleVote = (message: any, optionID: any) => {
+        //  send poll update
     }
 
     const sendFile = () => {
@@ -322,6 +337,32 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
         setChosenFile(null);
     }
 
+    const sendCode = (data: any) => {
+        const socketData = {
+            sender: users[0],
+            content: messageText,
+            contentType: 'code',
+            snippet: data?.code,
+            language: data?.language
+        }
+
+        // send message
+
+        const message = {
+            user: users[0],
+            content: messageText,
+            contentType: 'code',
+            snippet: data?.code,
+            language: data?.language
+        }
+        setMessages((prevMessages: any) => [...prevMessages, message]);
+
+
+        setMessageText("");
+        setChosenFile(null);
+        setIsCodeModalOpen(false);
+    }
+
     return (
         <div className={`chat-collapse ${collapse ? 'chat-collapse--collapsed' : ''}`} ref={isFirstRender}>
             <button className='chat-collapse__button' onClick={handleCollapseClick}>
@@ -346,12 +387,15 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
 
                             return <PollMessage
                                 key={index}
+                                myUser={myUser}
                                 user={user}
                                 userColor={userColor}
                                 content={content}
                                 question={question}
                                 options={options}
                                 totalVotes={totalVotes}
+                                onUpdate={handleVote}
+                                scrollableContainerRef={messageContainerRef}
                             />
                         } else if (message?.contentType && message?.contentType === 'file') {
                             const fileMetadata = message?.fileMetadata;
@@ -372,7 +416,20 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
                                 size={size}
                                 fileUrl={fileUrl}
                             />
-                        } else {
+                        } else if (message?.contentType && message?.contentType === 'code') {
+                            const snippet = message?.snippet;
+                            const language = message?.language;
+
+                            return <CodeMessage
+                                key={index}
+                                user={user}
+                                userColor={userColor}
+                                content={content}
+                                code={snippet}
+                                language={language}
+                            />
+                        }
+                        else {
                             return (
                                 <Message
                                     key={index}
@@ -437,6 +494,16 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
                     <div className='triangle'></div>
                 </div>
                 : <></>}
+            {isCodeModalOpen && (
+                <Modal
+                    header={(<span className='code-modal__header'>
+                        <FontAwesomeIcon icon={faCode} style={{ fontSize: '40px' }} />
+                        <h2>Code</h2>
+                    </span>)}
+                    content={(<CodeEditor onSubmit={sendCode} />)}
+                    onClose={toggleCodeModalOpen}
+                />
+            )}
             {isPollModalOpen && (
                 <Modal
                     header={(<span className='poll-modal__header'>

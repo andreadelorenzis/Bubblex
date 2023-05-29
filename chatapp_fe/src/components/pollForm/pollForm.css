@@ -1,6 +1,7 @@
 .poll-form {
     display: flex;
     flex-direction: column;
+    background-color: #191b1f;
 }
 
 .poll-form__options__label {
@@ -12,6 +13,10 @@
     align-items: center;
 }
 
+.poll-form input {
+    background-color: #25262c;
+}
+
 .poll-form__add-btn {
     display: flex;
     align-items: center;
@@ -20,10 +25,12 @@
 }
 
 .poll-form__submit-btn {
-    background-color: gray;
+    background-color: #1c9dea;
     width: 300px;
     height: 50px;
     margin: 0 auto;
     margin-top: 60px;
     border-radius: 8px;
+    color: #fff;
+    font-weight: bold;
 }

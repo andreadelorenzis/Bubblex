@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useState, useEffect } from 'react'
 import './videocall.css'
 import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -11,6 +11,33 @@ export default function Videocall({ socket }: any) {
     const [collapse, setCollapse] = useState<boolean>(true);
     const [videoActive, setVideoActive] = useState<boolean>(true);
     const [microphoneActive, setMicrophoneActive] = useState<boolean>(true);
+    const [showControls, setShowControls] = useState<boolean>(true);
+    const [mouseMoved, setMouseMoved] = useState<boolean>(false);
+    const [screenShared, setScreenShared] = useState<boolean>(false);
+
+    useEffect(() => {
+        const handleMouseMove = () => {
+            setMouseMoved(true);
+            setShowControls(true);
+        };
+
+        const handleMouseTimeout = () => {
+            if (!mouseMoved) {
+                setShowControls(false);
+            }
+            setMouseMoved(false);
+        };
+
+        // Add event listeners
+        document.addEventListener('mousemove', handleMouseMove);
+        const timeoutId = setTimeout(handleMouseTimeout, 2000); // Set your desired timeout
+
+        // Clean up event listeners and timeout
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            clearTimeout(timeoutId);
+        };
+    }, [mouseMoved]);
 
     const handleVideoClick = (clickedVideoId: any) => {
         if (clickedVideoId === pinnedVideo) {
@@ -34,6 +61,10 @@ export default function Videocall({ socket }: any) {
         setMicrophoneActive(!microphoneActive);
     }
 
+    const handleShareBtnClick = () => {
+        setScreenShared(!screenShared);
+    }
+
     const users = [
         { name: 'User1' },
         { name: 'User2' },
@@ -53,7 +84,7 @@ export default function Videocall({ socket }: any) {
                         onClick={() => handleVideoClick(i)}
                     >
                         <FontAwesomeIcon icon={faUser} />
-                        <span className="videocall__user-card__name">{users[i].name}</span>
+                        <span className={`videocall__user-card__name ${showControls ? '' : 'videocall--hide'}`}>{users[i].name}</span>
                     </div>
                 );
             }
@@ -72,7 +103,7 @@ export default function Videocall({ socket }: any) {
                         onClick={() => handleVideoClick(i)}
                     >
                         <FontAwesomeIcon icon={faUser} />
-                        <span className="videocall__user-card__name">{users[i].name}</span>
+                        <span className={`videocall__user-card__name ${showControls ? '' : 'videocall--hide'}`}>{users[i].name}</span>
                     </div>
                 );
             }
@@ -80,6 +111,7 @@ export default function Videocall({ socket }: any) {
         return <></>
     }
 
+    console.log(screenShared)
     return (
         <div className='videocall'>
             <h3 className='videocall__title'>Nome stanza</h3>
@@ -96,16 +128,30 @@ export default function Videocall({ socket }: any) {
                         {renderNotPinnedVideoBoxes()}
                     </div>
                 </div>
-                <div className="videocall__buttons">
-                    <button onClick={handleVideoCameraBtnClick} className={videoActive ? '' : 'videocall__buttons__button--inactive'}>
+                <div className={`videocall__buttons ${showControls ? '' : 'videocall--hide'}`}>
+                    <button
+                        title={videoActive ? 'switch off camera' : 'turn on camera'}
+                        onClick={handleVideoCameraBtnClick}
+                        className={videoActive ? '' : 'videocall__buttons__button--inactive'}
+                    >
                         <FontAwesomeIcon icon={videoActive ? faVideoCamera : faVideoSlash} className='icon' />
                     </button>
-                    <button onClick={handleMicrophoneBtnClick} className={microphoneActive ? '' : 'videocall__buttons__button--inactive'}>
-                        <FontAwesomeIcon icon={microphoneActive ? faMicrophone : faMicrophoneSlash} className='icon' /></button>
-                    <button>
+                    <button
+                        title={microphoneActive ? 'switch off microphone' : 'turn on microphone'}
+                        onClick={handleMicrophoneBtnClick}
+                        className={microphoneActive ? '' : 'videocall__buttons__button--inactive'}>
+                        <FontAwesomeIcon icon={microphoneActive ? faMicrophone : faMicrophoneSlash} className='icon' />
+                    </button>
+                    <button
+                        title={screenShared ? 'stop sharing' : 'share screen'}
+                        className={`videocall__buttons__share ${screenShared ? 'videocall__buttons__share--active' : ''}`}
+                        onClick={handleShareBtnClick}
+                    >
                         <FontAwesomeIcon icon={faShareFromSquare} className='icon' />
                     </button>
-                    <button className='videocall__buttons__phone-btn'><FontAwesomeIcon icon={faPhoneSlash} className='icon' /></button>
+                    <button className='videocall__buttons__phone-btn' title='Close call'>
+                        <FontAwesomeIcon icon={faPhoneSlash} className='icon' />
+                    </button>
                 </div>
             </div>
             <ChatCollapsable collapse={collapse} onCollapse={handleCollapseClick} />

@@ -5,6 +5,7 @@ import { faPlusCircle, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { v4 as uuidv4 } from 'uuid';
 
 export default function PollForm({ onSubmit }: any) {
+    const [question, setQuestion] = useState<string>("");
     const [options, setOptions] = useState<any>({
         'someId': ''
     });
@@ -47,7 +48,7 @@ export default function PollForm({ onSubmit }: any) {
     }; */
 
     const handleSubmit = () => {
-        onSubmit(options);
+        onSubmit({ question, options });
     };
 
     return (

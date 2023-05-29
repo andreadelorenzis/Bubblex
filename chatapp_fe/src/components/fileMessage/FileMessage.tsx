@@ -9,7 +9,6 @@ import { saveAs } from 'file-saver';
 export default function FileMessage({ user, userColor, content, icon, name, type, size, fileUrl }: any) {
 
     const handleDownload = async () => {
-        console.log(fileUrl)
         try {
             const response = await fetch(fileUrl);
             const blob = await response.blob();

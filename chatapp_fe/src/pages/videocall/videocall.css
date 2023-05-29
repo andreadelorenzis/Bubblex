@@ -23,9 +23,11 @@
 }
 
 .videocall__title {
-    margin: 10px;
-    font-weight: bold;
+    margin: 20px 30px;
+    margin-bottom: 0;
     color: #fff;
+    font-weight: 400;
+    font-size: 23px;
 }
 
 .videocall__videos {
@@ -92,6 +94,12 @@
     padding: 3px 6px;
     border-radius: 5px;
     background-color: gainsboro;
+    opacity: 1;
+    transition: all 0.5s ease;
+}
+
+.videocall--hide {
+    opacity: 0;
 }
 
 .videocall__buttons {
@@ -99,12 +107,12 @@
     bottom: 10px;
     left: 50%;
     transform: translateX(-50%); */
+    transition: all 0.5s ease;
 }
 
 .videocall__buttons>button>.icon {
     color: #fff;
 }
-
 
 .videocall__buttons>button {
     width: 50px;
@@ -113,6 +121,7 @@
     margin: 0 5px;
     background-color: #2b2d31;
 }
+
 
 .videocall__buttons>button:hover {
     background-color: #3e4146;
@@ -132,6 +141,14 @@
 
 .videocall__buttons>.videocall__buttons__phone-btn:hover {
     background-color: #e74c4e;
+}
+
+.videocall__buttons>.videocall__buttons__share--active {
+    background-color: #1c9dea;
+}
+
+.videocall__buttons>.videocall__buttons__share--active:hover {
+    background-color: #3ba9e9;
 }
 
 .chat {

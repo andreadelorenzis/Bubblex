@@ -1,0 +1,10 @@
+.code-message {}
+
+.code-message__container {
+    margin: 10px 6px;
+    line-height: 2;
+}
+
+.editor-container .ace_content {
+    line-height: 2;
+}

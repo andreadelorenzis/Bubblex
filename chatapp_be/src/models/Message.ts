@@ -8,7 +8,7 @@ export interface IMessage extends Document {
     textContent: string;
     fileUrl?: string;
     fileMetadata: any;
-    codeSnippet?: string;
+    code?: string;
     position?: any;
     poll?: any;
     videocall?: any;
@@ -50,8 +50,13 @@ const messageSchema: Schema = new Schema<IMessage>({
             type: String
         }
     },
-    codeSnippet: {
-        type: String
+    code: {
+        snippet: {
+            type: String
+        },
+        language: {
+            type: String
+        }
     },
     position: {
         latitude: {
