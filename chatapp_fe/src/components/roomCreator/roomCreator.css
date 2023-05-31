@@ -1,0 +1,26 @@
+.room-creator {
+    display: flex;
+    flex-direction: column;
+    background-color: #191b1f;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.room-creator label {
+    margin-top: 10px;
+}
+
+.room-creator input {
+    background-color: #25262c;
+}
+
+.room-creator__submit-btn {
+    background-color: #1c9dea;
+    width: 300px;
+    height: 50px;
+    margin: 0 auto;
+    margin-top: 30px;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: bold;
+}

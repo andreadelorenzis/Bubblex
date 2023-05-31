@@ -3,29 +3,31 @@ import { Socket } from 'socket.io';
 const users: any = {};
 const roomUsers: any = {};
 const socketToRoom: any = {};
-const peers: any = {};
+
+
+/**
+ * Quando una persona accede ad una stanza in cui sono presenti altre persone, quella persona diventa l'initiator del collegamento.
+ * Il nuovo arrivato notifica tutti gli altri che si è unito con l'evento 'joinVideoRoom'. A quella persona viene restituito un'array dei socket id di tutti gli altri partecipanti ('allUsers'), eccetto se stesso.  Per ognuno degli utenti ricevuti, creo
+ * un nuovo peer con initiator: true, ossia invio un'offerta a tutti gli altri partecipanti di connettersi con me, mediante il metodo
+ * createPeer(). Quest'azione genera subito un evento di signal, che sul server viene ricevuto. A questo punto, il server genera
+ * un evento 'userJoined' che gli altri partecipanti ricevono e dopo il quale chiamano il metodo addPeer(), che permette di accettare
+ * la connessione. Mediante peer.signal() viene generato l'evento 'signal', che viene catturato dagli altri partecipanti e il quale 
+ * emette a sua volta l'evento 'returningSignal'. Questo viene ricevuto dal server, che invia all'iniziatore l'evento 'receivingReturnedSignal',
+ * che viene catturato dall'inizatore. In corrispondenza dell'evento di accettazione da parte dei partecipanti, l'iniziatore deve cercare
+ * il peer con che ha appena accettato la connessione, e accettare il segnale di ritorno, e ciò completa l'handshake.
+ */
+
 
 // Run when client connects
 export const initializeSocket = (io: any) => {
     io.on('connection', (socket: Socket) => {
-        if (!users[socket.id]) {
-            users[socket.id] = socket.id;
-        }
-        socket.emit("myID", socket.id);
-        /* console.log("All users: ", users); */
-        /* io.sockets.emit("allUsers", users); */
-
         console.log(`⚡:  ${socket.id} user just connected.`);
 
-        socket.on('send_message', (data: any) => {
-            console.log("Message: " + data.message + "To room: " + data.room);
-            socket.to(data.room).emit("receive_message", data.message);
-        });
-
-        socket.on('join_room', (data: any) => {
+        /* socket.on('joinRoom', (data: any) => {
             socket.join(data);
+            socket.emit("myID", socket.id);
             console.log(`Room ${data} joined`)
-        });
+        }); */
 
         socket.on("callUser", (data: any) => {
             console.log("call user")
@@ -37,80 +39,90 @@ export const initializeSocket = (io: any) => {
             io.to(data.to).emit('callAccepted', data.signal);
         });
 
-        socket.on('joinVideoRoom', (roomID: any) => {
+        socket.on('joinRoom', (data: any) => {
+            const roomID: any = data.roomID;
+            const username: any = data.username;
+            socket.join(roomID);
             if (roomUsers[roomID]) {
                 const length: number = roomUsers[roomID].length;
                 if (length >= 4) {
                     socket.emit("roomFull");
                     return;
                 }
-                roomUsers[roomID].push(socket.id);
+                roomUsers[roomID].push({
+                    name: username,
+                    id: socket.id
+                });
             } else {
-                roomUsers[roomID] = [socket.id];
+                roomUsers[roomID] = [{
+                    name: username,
+                    id: socket.id
+                }];
             }
             socketToRoom[socket.id] = roomID;
-            const usersInThisRoom: any = roomUsers[roomID].filter((id: any) => id !== socket.id);
-            socket.emit("allUsers", usersInThisRoom);
+            /* const usersInThisRoom: any = roomUsers[roomID].filter((id: any) => id !== socket.id); */
+            const usersInThisRoom = roomUsers[roomID];
+            console.log("Users in this room", usersInThisRoom)
+            socket.emit("allUsers", { users: usersInThisRoom, myUser: { id: socket.id, name: username } });
             console.log(`${socket.id} user joined the room.`)
-            console.log(roomUsers[roomID])
+            console.log("users ", roomUsers[roomID])
         });
 
         socket.on("sendingSignal", (payload: any) => {
-            console.log(`${payload.callerID} has sent an offer to ${payload.userToSignal}`);
-            io.to(payload.userToSignal).emit('userJoined', { signal: payload.signal, callerID: payload.callerID });
+            const userToSignalID = payload.userToSignalID;
+            const caller = payload.caller;
+            const signal = payload.signal;
 
+            console.log(`${caller.id} has sent an offer to ${userToSignalID}`);
+            io.to(userToSignalID).emit('userJoined', { signal: signal, caller: caller });
         });
 
-        socket.on("returningSignal", payload => {
-            console.log(`${socket.id} has answered the offer of ${payload.callerID}.`)
-            io.to(payload.callerID).emit('receivingReturnSignal', { signal: payload.signal, id: socket.id });
+        socket.on("returningSignal", (payload: any) => {
+            const caller = payload.caller;
+            const signal = payload.signal;
+
+            console.log(`${socket.id} has answered the offer of ${caller.id}.`)
+            io.to(caller.id).emit('receivingReturnSignal', { signal: signal, id: socket.id });
+        });
+
+        socket.on('sendTextMessage', (data: any) => {
+            console.log("Message: " + data.message + ", To room: " + data.room);
+            socket.to(data.room).emit("receiveTextMessage", data.message);
+        });
+
+        socket.on("muteForAll", (id: any) => {
+            console.log("Admin muted the mic of user " + id);
+            io.to(id).emit('muteMic');
+        });
+
+        socket.on("unmuteForAll", (id: any) => {
+            console.log("Admin enabled the mic of user " + id);
+            io.to(id).emit('unmuteMic');
+        });
+
+        socket.on("hideCamForAll", (id: any) => {
+            console.log("Admin has hidden the camera of user " + id);
+            io.to(id).emit('hideCam');
+        });
+
+        socket.on("showCamForAll", (id: any) => {
+            console.log("Admin enabled the camera of user " + id);
+            io.to(id).emit('showCam');
         });
 
         socket.on('disconnect', () => {
             console.log('🔥: A user disconnected');
             delete users[socket.id];
 
-
             const roomID = socketToRoom[socket.id];
             let room = roomUsers[roomID];
             if (room) {
-                room = room.filter((id: any) => id !== socket.id);
+                room = room.filter((user: any) => user.id !== socket.id);
                 roomUsers[roomID] = room;
             }
-
+            console.log("Users in this room", roomUsers[roomID])
+            socket.broadcast.emit('userLeft', socket.id);
         });
 
-        // ---------
-
-        /*         if (!peers?.socket?.id) {
-                    peers[socket.id] = socket;
-                }
-        
-                // Asking all other clients to setup the peer connection receiver
-                for (let id in peers) {
-                    if (id === socket.id) continue
-                    console.log('sending init receive to ' + id)
-                    peers[id].emit('initReceive', socket.id)
-                }
-        
-                socket.on('signal', (data: any) => {
-                    console.log('sending signal from ' + socket.id + ' to ', data)
-                    if (!peers[data.socketID]) return;
-                    peers[data.socketID].emit('signal', {
-                        socketID: socket.id,
-                        signal: data.signal
-                    })
-                })
-        
-                socket.on('disconnect', () => {
-                    console.log('socket disconnected ' + socket.id)
-                    socket.broadcast.emit('removePeer', socket.id)
-                    delete peers[socket.id]
-                })
-        
-                socket.on('initSend', (initSocketID: any) => {
-                    console.log('INIT SEND by ' + socket.id + ' for ' + initSocketID)
-                    peers[initSocketID].emit('initSend', socket.id)
-                }) */
     });
-}
+};

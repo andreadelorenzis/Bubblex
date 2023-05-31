@@ -5,7 +5,7 @@ import { faUser } from '@fortawesome/free-solid-svg-icons'
 import Message from '../message/Message'
 import Confetti from 'react-confetti';
 
-export default function PollMessage({ myUser, user, userColor, content, question, options, totalVotes, onUpdate, scrollableContainerRef }: any) {
+export default function PollMessage({ myUser, sender, userColor, content, question, options, totalVotes, onUpdate, scrollableContainerRef }: any) {
     const [optionsState, setOptionsState] = useState<any[]>([])
     const [votedOptionID, setVotedOptionID] = useState<any>(null);
     const [showConfetti, setShowConfetti] = useState(false);
@@ -97,7 +97,7 @@ export default function PollMessage({ myUser, user, userColor, content, question
 
     return (
         <div className='poll-message'>
-            <Message user={user} userColor={userColor} content={content} />
+            <Message sender={sender} userColor={userColor} content={content} />
             <div className="poll-message__results">
                 <span className='poll-message__results__question'>{question}</span>
                 <div className="poll-message__options">

@@ -1,0 +1,130 @@
+.room-inviter {
+    color: #d6d9dc;
+    background-color: #262625;
+    height: 90vh;
+}
+
+.room-inviter__nav {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 80px;
+    padding: 0 90px;
+    background-color: #1a1a1a;
+    display: flex;
+    align-items: center;
+}
+
+.room-inviter__body {
+    display: flex;
+    align-items: center;
+    margin-top: 50px;
+    height: 100%;
+    padding: 0 90px;
+}
+
+.room-inviter__body-left {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1.2;
+}
+
+
+.room-inviter__body-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    flex: 1;
+    margin-left: 40px;
+}
+
+.room-inviter__body-right>h3,
+.room-inviter__body-right>h2,
+.room-inviter__body-right>button {
+    width: 100%;
+    text-align: center;
+}
+
+.room-inviter__body-right>h2 {
+    margin-top: 20px;
+    font-weight: 900;
+    font-size: 40px;
+}
+
+
+.room-inviter__body-left__video-card {
+    position: relative;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Set the desired aspect ratio (e.g., 1:1 for square, 16:9 for widescreen) */
+    aspect-ratio: 16/9;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    max-width: 800px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.room-inviter__body-left__video-controls {
+    position: absolute;
+    bottom: -55px;
+    margin-top: auto;
+}
+
+.videocall__buttons>button>.icon {
+    color: #fff;
+}
+
+.room-inviter__body-left__video-controls>button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin: 0 15px;
+    background-color: #2b2d31;
+}
+
+.room-inviter__body-left__video-controls>button:hover {
+    background-color: #3e4146;
+}
+
+.room-inviter__body-left__video-controls>.inactive {
+    background-color: #e73e41;
+}
+
+.room-inviter__body-left__video-controls>.inactive:hover {
+    background-color: #e74c4e;
+}
+
+.room-inviter__submit-btn {
+    background-color: #1c9dea;
+    width: 300px;
+    height: 50px;
+    margin-top: 20px;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: bold;
+}
+
+.room-inviter__body-left__video-card>.video {
+    width: 100%;
+    height: 100%;
+}
+
+/* FULL WIDTH VIDEO */
+/* .room-inviter__body-left__video-card>.video {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+} */

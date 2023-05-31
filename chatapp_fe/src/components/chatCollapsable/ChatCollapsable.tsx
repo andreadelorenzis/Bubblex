@@ -15,8 +15,10 @@ import FileMessage from '../fileMessage/FileMessage'
 import { getTypeName, formatFileSize, getIconByType } from '../../utils/fileUtils'
 import CodeEditor from '../codeEditor/CodeEditor'
 import CodeMessage from '../codeMessage/CodeMessage'
+import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios'
 
-export default function ChatCollapsable({ collapse, onCollapse }: any) {
+export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }: any) {
     const [users, setUsers] = useState<any[]>([]);
     const [myUser, setMyUser] = useState<any>({});
     const [messages, setMessages] = useState<any[]>([]);
@@ -46,34 +48,60 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
     const fileInputRef = useRef<any>(null);
 
     useEffect(() => {
+        function onConnect() {
+            console.log('Connected')
+        }
+
+        function onDisconnect() {
+            console.log('Disconnected')
+        }
+
+        function onReceiveMessage(message: any) {
+            console.log(message)
+        }
+
+        socket.on('connect', onConnect);
+        socket.on('disconnect', onDisconnect);
+        socket.on('receiveTextMessage', onReceiveMessage);
+
+        /* socket.emit("joinRoom", roomID); */
+
+        return () => {
+            socket.off('connect', onConnect);
+            socket.off('disconnect', onDisconnect);
+            socket.off('receiveTextMessage', onReceiveMessage);
+        };
+    }, []);
+
+    useEffect(() => {
         const users = [
-            { id: 1, name: 'User 1', profileImg: 'https://firebasestorage.googleapis.com/v0/b/chatapp-ce281.appspot.com/o/images%2Fprofile_picture.jpg?alt=media&token=e5eca9ce-fdfe-44e8-965e-61fb825e2200' },
-            { id: 2, name: 'User 2' },
-            { id: 3, name: 'User 3' },
-            { id: 4, name: 'User 4' },
-            { id: 5, name: 'User 5' },
+            { id: uuidv4(), name: 'User 1' },
+            { id: uuidv4(), name: 'User 2' },
+            { id: uuidv4(), name: 'User 3' },
+            { id: uuidv4(), name: 'User 4' },
+            { id: uuidv4(), name: 'User 5' },
         ];
         setUsers(users);
         setMyUser(users[0]);
         setMessages([
             {
-                user: users[0],
+                sender: users[0],
                 content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto nostrum inventore, sequi natus eaque error voluptates neque tempore quae, iste ex nobis at odit veritatis, est aspernatur nisi accusamus architecto!'
             },
             {
-                user: users[1],
+                sender: users[1],
                 content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto nostrum inventore, sequi natus eaque error voluptates neque tempore quae, iste ex nobis at odit veritatis, est aspernatur nisi accusamus architecto!'
             },
             {
-                user: users[2],
+                sender: users[2],
                 content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto nostrum inventore, sequi natus eaque error voluptates neque tempore quae, iste ex nobis at odit veritatis, est aspernatur nisi accusamus architecto!'
             },
             {
-                user: users[3],
+                sender: users[3],
                 content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto nostrum inventore, sequi natus eaque error voluptates neque tempore quae, iste ex nobis at odit veritatis, est aspernatur nisi accusamus architecto!'
             },
             {
-                user: users[1],
+                sender: users[1],
                 content: 'Eccovi il sondaggio',
                 contentType: 'poll',
                 question: 'Domanda?',
@@ -269,18 +297,32 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
         setChosenFile(null);
     }
 
-    const sendMessage = () => {
+    const sendMessage = async () => {
         if (!!chosenFile) {
             sendFile();
             return;
         }
-
         setMessages((prevMessages: any) => [...prevMessages, {
-            user: users[0],
+            sender: myUser,
             content: messageText
         }]);
 
         // send message
+        const message = {
+            sender: myUser,
+            contentType: 'text',
+            textContent: messageText
+        }
+        try {
+            await axios.post("http://localhost:4000/api/v1/messages/", message);
+            const data = {
+                message: message.textContent,
+                room: roomID
+            }
+            socket.emit('sendTextMessage', data);
+        } catch (error) {
+            console.error(error);
+        }
 
         setMessageText("");
         setChosenFile(null);
@@ -295,8 +337,6 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
             options: data?.options
         }
         setMessages((prevMessages: any) => [...prevMessages, pollMessage]);
-
-        // send message
 
         setMessageText("");
         setChosenFile(null);
@@ -322,7 +362,7 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
 
         // AFTER upload
         const fileMessage = {
-            user: users[0],
+            sender: users[0],
             content: messageText,
             contentType: 'file',
             fileUrl: 'https://firebasestorage.googleapis.com/v0/b/chatapp-ce281.appspot.com/o/Authentication.png?alt=media&token=bd3b2da8-1589-4634-a65b-2a39c38d8da3',
@@ -349,7 +389,7 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
         // send message
 
         const message = {
-            user: users[0],
+            sender: users[0],
             content: messageText,
             contentType: 'code',
             snippet: data?.code,
@@ -376,9 +416,9 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
                 ref={messageContainerRef}>
                 {
                     !!messages && !!users && messages.map((message: any, index: any) => {
-                        const user = message?.user;
+                        const sender = message?.sender;
                         const content = message.content;
-                        const userColor = userColors[user.id];
+                        const userColor = userColors[sender.id];
 
                         if (message?.contentType && message?.contentType === 'poll') {
                             const question = message?.question;
@@ -388,7 +428,7 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
                             return <PollMessage
                                 key={index}
                                 myUser={myUser}
-                                user={user}
+                                sender={sender}
                                 userColor={userColor}
                                 content={content}
                                 question={question}
@@ -407,7 +447,7 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
 
                             return <FileMessage
                                 key={index}
-                                user={user}
+                                sender={sender}
                                 userColor={userColor}
                                 content={content}
                                 icon={icon}
@@ -422,7 +462,7 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
 
                             return <CodeMessage
                                 key={index}
-                                user={user}
+                                sender={sender}
                                 userColor={userColor}
                                 content={content}
                                 code={snippet}
@@ -433,7 +473,7 @@ export default function ChatCollapsable({ collapse, onCollapse }: any) {
                             return (
                                 <Message
                                     key={index}
-                                    user={user}
+                                    sender={sender}
                                     userColor={userColor}
                                     content={content} />
                             );

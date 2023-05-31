@@ -74,6 +74,10 @@ html,
   box-sizing: border-box;
 }
 
+body {
+  /* height: 100vh; */
+}
+
 input,
 button,
 textarea,
@@ -114,7 +118,7 @@ ul {
 }
 
 p {
-  font-size: 13px;
+  font-size: ;
 }
 
 h1 {
@@ -141,4 +145,9 @@ input {
 body {
   background-color: #191b1f;
   font-family: 'Poppins', sans-serif;
+}
+
+video {
+  margin: 0;
+  padding: 0;
 }

@@ -24,7 +24,7 @@ const Modal = ({ header, content, onClose }: any) => {
                 <div className="modal__header">
                     {header}
                     <button className="modal__close-button" onClick={onClose}>
-                        <FontAwesomeIcon icon={faClose} style={{ fontSize: '30px' }} />
+                        <FontAwesomeIcon icon={faClose} style={{ fontSize: '25px' }} />
                     </button>
                 </div>
                 <div className="modal__content">{content}</div>

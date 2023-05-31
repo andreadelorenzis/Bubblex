@@ -38,7 +38,7 @@ export default function Chat({ socket }: any) {
 
     const joinRoom = () => {
         if (room !== "") {
-            socket.emit("join_room", room);
+            socket.emit("joinRoom", room);
         }
     }
 

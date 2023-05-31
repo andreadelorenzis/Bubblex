@@ -12,7 +12,7 @@ import "ace-builds/src-noconflict/ext-language_tools";
 import Message from '../message/Message';
 import "./codeMessage.css"
 
-export default function CodeMessage({ user, userColor, content, code, language }: any) {
+export default function CodeMessage({ sender, userColor, content, code, language }: any) {
     useEffect(() => {
         // Add custom styles to adjust line height
         const editorElement: any = document.querySelector('.ace_editor');
@@ -23,7 +23,7 @@ export default function CodeMessage({ user, userColor, content, code, language }
 
     return (
         <div className='code-message'>
-            <Message user={user} userColor={userColor} content={content} />
+            <Message sender={sender} userColor={userColor} content={content} />
             <div className="code-message__container">
                 <AceEditor
                     mode={language}
