@@ -4,7 +4,7 @@
   "description": "Backend dell'applicazione di messaggistica.",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node_modules/.bin/ts-node src/server.ts",
+    "start": "node ./dist/server.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.ts"

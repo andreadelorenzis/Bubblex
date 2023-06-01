@@ -202,7 +202,17 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     const remoteVideoRefs: any = useRef([]);
     const remotePeerRefs: any = useRef([]);
 
-    const [demo, setDemo] = useState<any>(true);
+    const iceServers: any = [
+        {
+            urls: "stun:stun.l.google.com:19302",
+        },
+        {
+            urls: "stun:stun2.l.google.com:19305",
+        },
+        {
+            urls: "stun:stun3.l.google.com:19305",
+        },
+    ]
 
     const navigate = useNavigate();
 
@@ -382,7 +392,6 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
             }
 
             item.peer.signal(payload.signal);
-            setDemo(false);
         }
 
         initCamera();
@@ -525,6 +534,9 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
             initiator: true,
             trickle: false,
             stream: stream,
+            config: {
+                iceServers: iceServers
+            }
         });
 
         const handleSignal = (signal: any) => {
@@ -552,6 +564,9 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
             initiator: false,
             trickle: false,
             stream: stream,
+            config: {
+                iceServers: iceServers
+            }
         })
 
         const handleSignal = (signal: any) => {

@@ -1,0 +1,21 @@
+version: "3"
+services: 
+  react-app: 
+    image: react-app
+    build: ./chatapp_fe/
+    stdin_open: true
+    ports:
+      - "3000:3000"
+    networks: 
+      - chat-app
+  api-server: 
+    image: api-server
+    build: ./chatapp_be/
+    ports: 
+      - "4000:4000"
+    networks:
+      - chat-app
+
+networks: 
+  chat-app:
+    driver: bridge
