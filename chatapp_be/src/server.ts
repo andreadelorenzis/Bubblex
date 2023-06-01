@@ -36,7 +36,11 @@ if (process.env.NODE_ENV === 'development') {
         }
     });
 } else {
-    io = new Server(server);
+    io = new Server(server, {
+        cors: {
+            origin: "https://chatapp-frontend-trzc.onrender.com",
+        }
+    });
 }
 const port = process.env.PORT || 4000;
 
