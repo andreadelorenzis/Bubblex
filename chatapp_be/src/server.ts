@@ -4,7 +4,7 @@ import { processImage, uploadFile } from './utils/fileUtils';
 import { Server, Socket } from 'socket.io';
 
 
-require('dotenv').config();
+/* require('dotenv').config(); */
 const mongoose = require('mongoose');
 const path = require('path');
 const http = require('http');
