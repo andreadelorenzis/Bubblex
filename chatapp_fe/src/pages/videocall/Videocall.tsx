@@ -176,7 +176,7 @@ const Video = ({ peerID, stream, addVideoRef, amOwner, socket }: any) => {
     );
 }
 
-export default function Videocall({ socket, amOwner, amInvited }: any) {
+export default function Videocall({ socket, amOwner, amInvited, initVideoValue, initMicValue }: any) {
     const [pinnedVideo, setPinnedVideo] = useState<any>(null);
     const [collapse, setCollapse] = useState<boolean>(true);
     const [videoActive, setVideoActive] = useState<boolean>(true);
@@ -201,6 +201,8 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
     const [remoteStreams, setRemoteStreams] = useState<any[]>([]);
     const remoteVideoRefs: any = useRef([]);
     const remotePeerRefs: any = useRef([]);
+
+    const [demo, setDemo] = useState<any>(true);
 
     const navigate = useNavigate();
 
@@ -227,15 +229,33 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
         }
 
         const initCamera = () => {
+            console.log("Dentro 1")
             navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then((stream: any) => {
+                console.log("Dentro 2")
                 localStream.current = stream;
+
+                if (initMicValue === true) {
+                    unmuteMic();
+                } else {
+                    muteMic();
+                }
+
+                if (initVideoValue === true) {
+                    showCam();
+                } else {
+                    hideCam();
+                }
+
                 setInitVideo(<video id={uuidv4()} className="videocall__videos__user-card__video" ref={userVideo} autoPlay playsInline></video>)
+
                 socket.emit("joinRoom", {
                     roomID: roomID,
                     username: username
                 });
+
                 console.log(username + ' joined room ' + roomID)
-                socket.on("allUsers", (data: any) => {
+                socket.once("allUsers", (data: any) => {
+                    console.log("dentro 3")
                     console.log("Setting the stream for the existent participants");
                     const usersList: any[] = data.users;
                     console.log("Received users", data.users)
@@ -252,7 +272,7 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
                     const otherUsers: any[] = usersList.filter((user: any) => user.id !== myUser.id);
                     otherUsers.forEach((user: any) => {
                         const userID = user.id;
-                        const peer = createPeer(userID, myUser, stream);
+                        const { peer, cleanup }: any = createPeer(userID, myUser, stream);
                         console.log("Created peer " + userID, peer);
                         peer.on('stream', (stream: any) => {
                             setRemoteStreams((prevStreams: any) => [...prevStreams, {
@@ -271,6 +291,7 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
                         remotePeerRefs.current.push({
                             peerID: userID,
                             peer,
+                            cleanup
                         })
                         peersCopy.push({
                             peer: peer,
@@ -280,95 +301,109 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
                     setPeers(peersCopy);
                 })
 
-                socket.on("userJoined", (payload: any) => {
-                    const signal = payload.signal;
-                    const caller = payload.caller;
-
-                    console.log(caller.id + " joined the room with ID:");
-
-                    const peersCopy: any[] = [...peers];
-
-                    const peer = addPeer(signal, caller, stream);
-                    console.log("Added peer " + caller.id, peer);
-
-                    setUsers((prevUsers: any[]) => [...prevUsers, caller]);
-                    setNotPinnedUsers((prevUsers: any[]) => [...prevUsers, caller]);
-
-                    if (!peer) {
-                        return;
-                    }
-
-                    peer.on('stream', (stream: any) => {
-                        console.log("Setting the stream for user " + caller.id);
-                        setRemoteStreams((prevStreams: any) => [...prevStreams, {
-                            userID: caller.id,
-                            stream: stream
-                        }]);
-                        setTimeout(() => {
-                            const videoEl: any = document.getElementById(caller.id);
-                            if (!!videoEl) {
-                                console.log("Stream setted for user " + caller.id)
-                                videoEl.srcObject = stream;
-                            }
-                        }, 2000);
-                    })
-
-                    remotePeerRefs.current.push({
-                        peerID: caller.id,
-                        peer,
-                    });
-                    peersCopy.push({ peer: peer, peerID: caller.id });
-                    console.log("peersCopy ", peersCopy)
-
-                    setPeers((prevPeers: any[]) => [...prevPeers, { peer, peerID: caller.id }]);
-                });
-
-                socket.on("receivingReturnSignal", (payload: any) => {
-                    console.log("The user " + payload.id + " accepted my offer.");
-                    console.log("Now I signal back and complete the handshake with " + payload.id);
-                    const item = remotePeerRefs.current.find((p: any) => p.peerID === payload.id);
-                    item.peer.signal(payload.signal);
-                });
-
                 socket.on("muteMic", () => {
-                    if (localStream.current) {
-                        const audioTrack = localStream.current.getTracks().find((track: any) => track.kind === 'audio');
-                        audioTrack.enabled = false;
-                        setMicrophoneActive(false);
-                        setIsMicMutedByAdmin(true);
-                    }
+                    muteMic();
+                    setIsMicMutedByAdmin(true);
                 });
 
                 socket.on("unmuteMic", () => {
-                    if (localStream.current) {
-                        const audioTrack = localStream.current.getTracks().find((track: any) => track.kind === 'audio');
-                        audioTrack.enabled = true;
-                        setMicrophoneActive(true);
-                        setIsMicMutedByAdmin(false);
-                    }
+                    unmuteMic();
+                    setIsMicMutedByAdmin(false);
                 });
 
                 socket.on("hideCam", () => {
-                    if (localStream.current) {
-                        const videoTrack = localStream.current.getTracks().find((track: any) => track.kind === 'video');
-                        videoTrack.enabled = false;
-                        setVideoActive(false);
-                        setIsCameraHiddenByAdmin(true);
-                    }
+                    hideCam();
+                    setIsCameraHiddenByAdmin(true);
                 });
 
                 socket.on("showCam", () => {
-                    if (localStream.current) {
-                        const videoTrack = localStream.current.getTracks().find((track: any) => track.kind === 'video');
-                        videoTrack.enabled = true;
-                        setVideoActive(true);
-                        setIsCameraHiddenByAdmin(false);
-                    }
+                    showCam();
+                    setIsCameraHiddenByAdmin(false);
                 });
+
+                socket.on("userJoined", handleUserJoined);
+                socket.on("receivingReturnSignal", handleReceivingReturnSignal);
+
             })
         }
 
+        const handleUserJoined = (payload: any) => {
+            const signal = payload.signal;
+            const caller = payload.caller;
+
+            console.log(caller.id + " joined the room with ID:");
+
+            const peersCopy: any[] = [...peers];
+
+            const { peer, cleanup }: any = addPeer(signal, caller, localStream.current);
+            console.log("Added peer " + caller.id, peer);
+
+            setUsers((prevUsers: any[]) => [...prevUsers, caller]);
+            setNotPinnedUsers((prevUsers: any[]) => [...prevUsers, caller]);
+
+            if (!peer) {
+                return;
+            }
+
+            peer.on('stream', (stream: any) => {
+                console.log("Setting the stream for user " + caller.id);
+                setRemoteStreams((prevStreams: any) => [...prevStreams, {
+                    userID: caller.id,
+                    stream: stream
+                }]);
+                setTimeout(() => {
+                    const videoEl: any = document.getElementById(caller.id);
+                    if (!!videoEl) {
+                        console.log("Stream setted for user " + caller.id)
+                        videoEl.srcObject = stream;
+                    }
+                }, 2000);
+            })
+
+            remotePeerRefs.current.push({
+                peerID: caller.id,
+                peer,
+                cleanup
+            });
+            peersCopy.push({ peer: peer, peerID: caller.id });
+            console.log("peersCopy ", peersCopy)
+
+            setPeers((prevPeers: any[]) => [...prevPeers, { peer, peerID: caller.id }]);
+        }
+
+        const handleReceivingReturnSignal = (payload: any) => {
+            console.log("The user " + payload.id + " accepted my offer.");
+            console.log("Now I signal back and complete the handshake with " + payload.id);
+            const item = remotePeerRefs.current.find((p: any) => p.peerID === payload.id);
+
+            if (item.peer.signalingState === "stable") {
+                console.log("Connection is already stable, ignoring the remote answer.");
+                return;
+            }
+
+            item.peer.signal(payload.signal);
+            setDemo(false);
+        }
+
         initCamera();
+
+        return () => {
+            socket.off("userJoined", handleUserJoined);
+            socket.off("receivingReturnSignal", handleReceivingReturnSignal);
+
+            console.log("Cleaning up peers...");
+            remotePeerRefs.current.forEach((p: any) => {
+                try {
+                    p.peer.destroy();
+                    p.cleanup();
+                } catch (error) {
+                    console.error("Error on destroy: ", error);
+                }
+            });
+
+        };
+
+
     }, []);
 
     useEffect(() => {
@@ -409,19 +444,22 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
             const peerObj = remotePeerRefs.current.find((p: any) => p.peerID === id);
             const userObj = users.find((u: any) => u.id === id);
             console.log("User to delete ", userObj);
+
             if (peerObj) {
                 console.log("DESTROY CONNECTION for " + peerObj.peerID);
                 try {
                     await peerObj.peer.destroy();
+                    const updatedPeerRefs = remotePeerRefs.current.filter((p: any) => p.peerID !== id);
+                    remotePeerRefs.current = updatedPeerRefs;
                 } catch (error: any) {
                     console.error("Error on destroy: ", error);
                 }
             }
-            const updatedPeerRefs = remotePeerRefs.current.filter((p: any) => p.peerID !== id);
+
             const updatedPeers = peers.filter((p: any) => p.peerID !== id);
             const updatedUsers = users.filter((u: any) => u.id !== id);
             const updatedRemoteStreams = remoteStreams.filter((s: any) => s.userID !== id);
-            remotePeerRefs.current = updatedPeerRefs;
+
             setPeers(updatedPeers);
             setUsers(updatedUsers);
             console.log("UPDATED USERS ", updatedUsers)
@@ -435,11 +473,50 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
             }
         }
 
-        socket.on("userLeft", (id: any) => {
+        const handleUserLeft = (id: any) => {
             removePeer(id);
-        });
+        }
+
+        socket.on("userLeft", handleUserLeft);
+
+        return (() => {
+            socket.off("userLeft", handleUserLeft);
+        })
 
     }, [users, remotePeerRefs, peers, setPeers, setUsers, setNotPinnedUsers, setRemoteStreams, pinnedUser]);
+
+
+    const muteMic = () => {
+        if (localStream.current) {
+            const audioTrack = localStream.current.getTracks().find((track: any) => track.kind === 'audio');
+            audioTrack.enabled = false;
+            setMicrophoneActive(false);
+        }
+    }
+
+    const unmuteMic = () => {
+        if (localStream.current) {
+            const audioTrack = localStream.current.getTracks().find((track: any) => track.kind === 'audio');
+            audioTrack.enabled = true;
+            setMicrophoneActive(true);
+        }
+    }
+
+    const hideCam = () => {
+        if (localStream.current) {
+            const videoTrack = localStream.current.getTracks().find((track: any) => track.kind === 'video');
+            videoTrack.enabled = false;
+            setVideoActive(false);
+        }
+    }
+
+    const showCam = () => {
+        if (localStream.current) {
+            const videoTrack = localStream.current.getTracks().find((track: any) => track.kind === 'video');
+            videoTrack.enabled = true;
+            setVideoActive(true);
+        }
+    }
 
     function createPeer(userToSignalID: any, caller: any, stream: any) {
         const callerID: any = caller.id;
@@ -450,12 +527,18 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
             stream: stream,
         });
 
-        peer.on("signal", (signal: any) => {
+        const handleSignal = (signal: any) => {
             console.log("The new peer " + callerID + " sends an offer to " + userToSignalID);
             socket.emit("sendingSignal", { userToSignalID, caller, signal })
-        })
+        };
 
-        return peer;
+        peer.on("signal", handleSignal);
+
+        const cleanup = () => {
+            peer.off("signal", handleSignal);
+        };
+
+        return { peer, cleanup };
     }
 
     function addPeer(incomingSignal: any, caller: any, stream: any) {
@@ -471,15 +554,20 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
             stream: stream,
         })
 
-        // Dato che initiator: false, questo evento viene generato quando viene ricevuta un offerta da un nuovo peer
-        peer.on("signal", (signal: any) => {
+        const handleSignal = (signal: any) => {
             console.log("I answer the offer of " + callerID);
             socket.emit("returningSignal", { signal, caller })
-        })
+        };
+
+        peer.on("signal", handleSignal);
+
+        const cleanup = () => {
+            peer.off("signal", handleSignal);
+        };
 
         peer.signal(incomingSignal);
 
-        return peer;
+        return { peer, cleanup };
     }
 
 
@@ -580,6 +668,10 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
         alert("Video blocked by admin");
     }
 
+    const toggleMicBlockedModal = () => {
+        alert("Mic blocked by admin")
+    }
+
     const handleMicrophoneBtnClick = () => {
         if (localStream.current) {
             const audioTrack = localStream.current.getTracks().find((track: any) => track.kind === 'audio');
@@ -597,9 +689,6 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
         }
     }
 
-    const toggleMicBlockedModal = () => {
-        alert("Mic blocked by admin")
-    }
 
     const handleShareBtnClick = () => {
         if (screenShared) {
@@ -609,6 +698,17 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
             setScreenShared(true);
             shareScreen();
         }
+    }
+
+    const handleCloseCall = () => {
+        hideCam();
+        muteMic();
+        if (localStream.current) {
+            const videoTrack = localStream.current.getVideoTracks()[0];
+            videoTrack.stop();
+        }
+        socket.disconnect();
+        navigate("/leave/" + roomID + "/" + username);
     }
 
     const pinUser = (clickedUser: any) => {
@@ -659,7 +759,7 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
                     onClick={() => pinUser(user)}
                 >
                     {user.id === myUser.id
-                        ? initVideo
+                        ? <video id={uuidv4()} className="videocall__videos__user-card__video" ref={userVideo} autoPlay playsInline></video>
                         : <Video
                             peerID={user.id}
                             stream={!!remoteStream ? remoteStream.stream : null}
@@ -690,7 +790,7 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
                     onClick={() => pinUser(pinnedUser)}
                 >
                     {pinnedUser.id === myUser.id
-                        ? initVideo
+                        ? <video id={uuidv4()} className="videocall__videos__user-card__video" ref={userVideo} autoPlay playsInline></video>
                         : <Video
                             peerID={pinnedUser.id}
                             stream={!!remoteStream ? remoteStream.stream : null}
@@ -742,12 +842,19 @@ export default function Videocall({ socket, amOwner, amInvited }: any) {
                     >
                         <FontAwesomeIcon icon={faShareFromSquare} className='icon' />
                     </button>
-                    <button className='videocall__buttons__phone-btn' title='Close call'>
+                    <button className='videocall__buttons__phone-btn' title='Close call' onClick={handleCloseCall}>
                         <FontAwesomeIcon icon={faPhoneSlash} className='icon' />
                     </button>
                 </div>
             </div>
-            <ChatCollapsable collapse={collapse} onCollapse={handleCollapseClick} socket={socket} />
+            <ChatCollapsable
+                collapse={collapse}
+                onCollapse={handleCollapseClick}
+                socket={socket}
+                roomID={roomID}
+                users={users}
+                myUser={myUser}
+            />
         </div>
     )
 }

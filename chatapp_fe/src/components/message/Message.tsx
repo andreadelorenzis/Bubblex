@@ -3,7 +3,10 @@ import { format } from "timeago.js";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 
-export default function Message({ sender, userColor, content }: any) {
+export default function Message({ message, userColor }: any) {
+    const sender = message.sender;
+    const content = message.content;
+
     return (
         <div className="message">
             {!!sender?.profileImg

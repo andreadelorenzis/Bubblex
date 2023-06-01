@@ -1,4 +1,5 @@
-import { Schema, Model, model, connect } from 'mongoose';
+import { Schema, Model, model, connect, Types } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface IMessage extends Document {
     sender: any;
@@ -6,6 +7,8 @@ export interface IMessage extends Document {
     contentType: string;
     timestamp: Date;
     textContent: string;
+    userGenerated?: boolean;
+    _id: string;
     fileUrl?: string;
     fileMetadata: any;
     code?: string;
@@ -15,6 +18,10 @@ export interface IMessage extends Document {
 }
 
 const messageSchema: Schema = new Schema<IMessage>({
+    _id: {
+        type: String,
+        default: () => uuidv4(),
+    },
     sender: {
         name: {
             type: String,
@@ -40,6 +47,10 @@ const messageSchema: Schema = new Schema<IMessage>({
     },
     textContent: {
         type: String,
+    },
+    userGenerated: {
+        type: Boolean,
+        default: false,
     },
     fileUrl: {
         type: String
@@ -80,23 +91,28 @@ const messageSchema: Schema = new Schema<IMessage>({
         },
         options: {
             type: [{
+                id: {
+                    type: String
+                },
                 text: {
                     type: String
                 },
                 voters: {
                     type: [{
-                        type: Schema.Types.ObjectId,
-                        ref: 'Person',
+                        name: {
+                            type: String,
+                            required: true
+                        },
+                        id: {
+                            type: String,
+                            required: true
+                        }
                     }],
                     default: []
                 },
             }],
             default: []
         },
-        votersNum: {
-            type: Number,
-            default: 0
-        }
     },
     videocall: {
         url: {
@@ -135,6 +151,7 @@ export const messageDAL = {
             const newMessage = await Message.create(data);
             return newMessage;
         } catch (error) {
+            console.error(error)
             throw new Error('Failed to create the message');
         }
     },

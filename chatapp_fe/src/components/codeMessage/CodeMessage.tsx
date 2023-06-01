@@ -1,18 +1,22 @@
 import React, { useEffect } from 'react'
 import AceEditor from 'react-ace';
 import "ace-builds/src-noconflict/mode-java";
-import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-python";
-import "ace-builds/src-noconflict/mode-html";
 import "ace-builds/src-noconflict/mode-mysql";
 import "ace-builds/src-noconflict/mode-markdown";
-import "ace-builds/src-noconflict/mode-css";
-import "ace-builds/src-noconflict/theme-twilight";
-import "ace-builds/src-noconflict/ext-language_tools";
+import "ace-builds/src-noconflict/theme-monokai";
 import Message from '../message/Message';
 import "./codeMessage.css"
 
-export default function CodeMessage({ sender, userColor, content, code, language }: any) {
+export default function CodeMessage({
+    message,
+    userColor,
+    code,
+    language
+}: any) {
+    const sender = message.sender;
+    const content = message.content;
+
     useEffect(() => {
         // Add custom styles to adjust line height
         const editorElement: any = document.querySelector('.ace_editor');
@@ -23,18 +27,18 @@ export default function CodeMessage({ sender, userColor, content, code, language
 
     return (
         <div className='code-message'>
-            <Message sender={sender} userColor={userColor} content={content} />
+            <Message message={message} userColor={userColor} />
             <div className="code-message__container">
                 <AceEditor
                     mode={language}
-                    theme="twilight"
+                    theme="monokai"
                     value={code}
                     readOnly
                     wrapEnabled
                     fontSize={14}
                     showPrintMargin={false}
                     width='100%'
-                    showGutter={false}
+                    showGutter={true}
                     maxLines={Infinity}
                 />
             </div>

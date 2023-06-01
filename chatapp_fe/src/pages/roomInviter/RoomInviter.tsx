@@ -4,9 +4,7 @@ import "./roomInviter.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faVideoCamera, faVideoSlash, faMicrophone, faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons'
 
-export default function RoomInviter({ socket, onSubmit }: any) {
-    const [videoActive, setVideoActive] = useState<boolean>(true);
-    const [microphoneActive, setMicrophoneActive] = useState<boolean>(true);
+export default function RoomInviter({ socket, onSubmit, microphoneActive, videoActive, setVideoActive, setMicrophoneActive }: any) {
     const [username, setUsername] = useState<string>("");
 
     const userVideo = useRef<any>(null);
@@ -28,8 +26,18 @@ export default function RoomInviter({ socket, onSubmit }: any) {
             const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true });
             userVideo.current.srcObject = stream;
             localStream.current = stream;
-            setVideoActive(true);
-            setMicrophoneActive(true);
+
+            if (microphoneActive) {
+                unmuteMic();
+            } else {
+                muteMic();
+            }
+
+            if (videoActive) {
+                showCam();
+            } else {
+                hideCam();
+            }
         } catch (err: any) {
             setVideoActive(false);
             setMicrophoneActive(false);
@@ -38,11 +46,51 @@ export default function RoomInviter({ socket, onSubmit }: any) {
     };
 
     const handleVideoCameraBtnClick = () => {
-        setVideoActive(!videoActive);
+        if (videoActive) {
+            hideCam()
+        } else {
+            showCam();
+        }
     }
 
     const handleMicrophoneBtnClick = () => {
-        setMicrophoneActive(!microphoneActive);
+        if (microphoneActive) {
+            muteMic();
+        } else {
+            unmuteMic();
+        }
+    }
+
+    const muteMic = () => {
+        if (localStream.current) {
+            const audioTrack = localStream.current.getTracks().find((track: any) => track.kind === 'audio');
+            audioTrack.enabled = false;
+            setMicrophoneActive(false);
+        }
+    }
+
+    const unmuteMic = () => {
+        if (localStream.current) {
+            const audioTrack = localStream.current.getTracks().find((track: any) => track.kind === 'audio');
+            audioTrack.enabled = true;
+            setMicrophoneActive(true);
+        }
+    }
+
+    const hideCam = () => {
+        if (localStream.current) {
+            const videoTrack = localStream.current.getTracks().find((track: any) => track.kind === 'video');
+            videoTrack.enabled = false;
+            setVideoActive(false);
+        }
+    }
+
+    const showCam = () => {
+        if (localStream.current) {
+            const videoTrack = localStream.current.getTracks().find((track: any) => track.kind === 'video');
+            videoTrack.enabled = true;
+            setVideoActive(true);
+        }
     }
 
     const handleChange = (e: any) => {

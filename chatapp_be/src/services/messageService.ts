@@ -9,13 +9,22 @@ const {
 import { chatService } from './chatService';
 
 async function createNewMessage(req: any, data: any) {
-    if (!data.textContent) {
+    if (!data.textContent && data.textContent !== "") {
         throw new Error("Content of the message is missing");
     }
 
     try {
         if (data?.contentType === 'file') {
-            data.fileUrl = req?.fileUrl;
+            data.fileUrl = req.fileUrl;
+            data.sender = {
+                id: data.senderID,
+                name: data.senderName
+            }
+            data.fileMetadata = {
+                name: data.fileName,
+                size: data.fileSize,
+                type: data.fileType
+            }
         }
         const newMessage = await messageDAL.createNewMessage(data);
         return newMessage;

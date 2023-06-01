@@ -18,9 +18,28 @@ import CodeMessage from '../codeMessage/CodeMessage'
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios'
 
-export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }: any) {
-    const [users, setUsers] = useState<any[]>([]);
-    const [myUser, setMyUser] = useState<any>({});
+/*
+
+    pollMessages: [
+        {
+            _id,
+            question
+            options: [
+                {
+                    id,
+                    text,
+                    votes: {
+                        name,
+                        id
+                    }
+                }
+            ]
+        }
+    ]
+
+ */
+
+export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, users, myUser }: any) {
     const [messages, setMessages] = useState<any[]>([]);
     const [messageText, setMessageText] = useState<any>("")
     const [userColors, setUsersColors] = useState<any>({});
@@ -57,7 +76,7 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
         }
 
         function onReceiveMessage(message: any) {
-            console.log(message)
+            setMessages((prevMessages: any[]) => [...prevMessages, message]);
         }
 
         socket.on('connect', onConnect);
@@ -74,74 +93,45 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
     }, []);
 
     useEffect(() => {
-        const users = [
-            { id: uuidv4(), name: 'User 1' },
-            { id: uuidv4(), name: 'User 2' },
-            { id: uuidv4(), name: 'User 3' },
-            { id: uuidv4(), name: 'User 4' },
-            { id: uuidv4(), name: 'User 5' },
-        ];
-        setUsers(users);
-        setMyUser(users[0]);
-        setMessages([
-            {
-                sender: users[0],
-                content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto nostrum inventore, sequi natus eaque error voluptates neque tempore quae, iste ex nobis at odit veritatis, est aspernatur nisi accusamus architecto!'
-            },
-            {
-                sender: users[1],
-                content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto nostrum inventore, sequi natus eaque error voluptates neque tempore quae, iste ex nobis at odit veritatis, est aspernatur nisi accusamus architecto!'
-            },
-            {
-                sender: users[2],
-                content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto nostrum inventore, sequi natus eaque error voluptates neque tempore quae, iste ex nobis at odit veritatis, est aspernatur nisi accusamus architecto!'
-            },
-            {
-                sender: users[3],
-                content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto nostrum inventore, sequi natus eaque error voluptates neque tempore quae, iste ex nobis at odit veritatis, est aspernatur nisi accusamus architecto!'
-            },
-            {
-                sender: users[1],
-                content: 'Eccovi il sondaggio',
-                contentType: 'poll',
-                question: 'Domanda?',
-                options: [
-                    {
-                        id: 1,
-                        text: 'Opzione 1',
-                        votes: [users[1]]
-                    },
-                    {
-                        id: 2,
-                        text: 'Opzione 2',
-                        votes: [users[2], users[3]]
-                    }
-                ]
-            }
-        ]);
+        console.log("ALL MESSAGES: ", messages)
 
-        const assignRandomColors = (users: any[]) => {
-            const colors = ['#ed4245', '#5865f2', '#faa61a', '#757e8a', '#3ba55c', '#b24ea1']; // List of available colors
-            const assignedColors: any = {};
-
-            users.forEach((user) => {
-                // Generate a random index within the available colors array
-                const randomIndex = Math.floor(Math.random() * colors.length);
-
-                // Assign the color to the user
-                assignedColors[user.id] = colors[randomIndex];
-
-                // Remove the assigned color from the available colors array to avoid repetition
-                colors.splice(randomIndex, 1);
+        function onUpdatePollMessage(data: any) {
+            const updatedMessages = messages.map((message: any) => {
+                if (message._id === data.messageID) {
+                    const updatedOptions = message.options.map((option: any) => {
+                        if (option.id === data.option.id) {
+                            const updatedVotes = [...option.votes];
+                            updatedVotes.push({
+                                name: data.voter.name,
+                                id: data.voter.id
+                            });
+                            return {
+                                ...option,
+                                votes: updatedVotes
+                            };
+                        }
+                        return option;
+                    });
+                    return {
+                        ...message,
+                        options: updatedOptions
+                    };
+                }
+                return message;
             });
-
-            return assignedColors;
+            setMessages(updatedMessages);
         }
+
+        socket.on('updatePollMessage', onUpdatePollMessage)
+    }, [messages])
+
+    useEffect(() => {
+        // Set the color for the usernames
         const assignedColors = assignRandomColors(users);
         setUsersColors(assignedColors);
 
-        const container = messageContainerRef.current;
         // Listener to check if I'm scrolled all the way to the bottom
+        const container = messageContainerRef.current;
         const readNewMessagesNotSeen = () => {
             if (!collapse && isNearBottom()) {
                 setNewMessagesNotSeen(0);
@@ -154,7 +144,7 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
         return () => {
             container.removeEventListener('scroll', readNewMessagesNotSeen);
         }
-    }, []);
+    }, [users]);
 
     useEffect(() => {
         if (isFirstRender.current) {
@@ -180,7 +170,6 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
         }
     }, [messages]);
 
-
     useEffect(() => {
         const handleOutsideClick = (event: any) => {
             if (emojiMenuOpened && emojiPickerRef.current && inputBarRef.current &&
@@ -199,6 +188,24 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
             document.removeEventListener('mousedown', handleOutsideClick);
         };
     }, [emojiMenuOpened, messageOptionsOpened]);
+
+    const assignRandomColors = (users: any[]) => {
+        const colors = ['#ed4245', '#5865f2', '#faa61a', '#757e8a', '#3ba55c', '#b24ea1']; // List of available colors
+        const assignedColors: any = {};
+
+        users.forEach((user) => {
+            // Generate a random index within the available colors array
+            const randomIndex = Math.floor(Math.random() * colors.length);
+
+            // Assign the color to the user
+            assignedColors[user.id] = colors[randomIndex];
+
+            // Remove the assigned color from the available colors array to avoid repetition
+            colors.splice(randomIndex, 1);
+        });
+
+        return assignedColors;
+    }
 
     const handleScrollBottom = () => {
         const msgContainer: any = document.getElementById('msg-container');
@@ -297,110 +304,100 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
         setChosenFile(null);
     }
 
-    const sendMessage = async () => {
-        if (!!chosenFile) {
-            sendFile();
-            return;
-        }
-        setMessages((prevMessages: any) => [...prevMessages, {
-            sender: myUser,
-            content: messageText
-        }]);
+    const handleClickSendBtn = (e: any) => {
+        sendMessage("text");
+    }
 
-        // send message
-        const message = {
+    const sendMessage = async (messageType?: string, messageData?: any) => {
+        const message: any = {
             sender: myUser,
-            contentType: 'text',
-            textContent: messageText
+            contentType: messageType,
+            textContent: messageText,
+            _id: uuidv4()
         }
+        if (!!chosenFile) {
+            const fileData = await uploadFileToApi();
+            message.contentType = 'file';
+            message.fileUrl = fileData.fileUrl;
+            message.fileMetadata = fileData.fileMetadata;
+            setChosenFile(null);
+        } else if (messageType === 'poll') {
+            message.question = messageData?.question;
+            message.options = messageData?.options;
+        } else if (messageType === 'code') {
+            message.snippet = messageData.code;
+            message.language = messageData.language;
+        } else {
+            // normal message
+        }
+
+        // send message via SOCKET and update state
+        const data = {
+            message: message,
+            room: roomID
+        }
+
+        // Update state
+        socket.emit('sendTextMessage', data);
+        setMessages((prevMessages: any) => [...prevMessages, message]);
+        setMessageText("");
+
+        // POST message to api
         try {
             await axios.post("http://localhost:4000/api/v1/messages/", message);
-            const data = {
-                message: message.textContent,
-                room: roomID
-            }
-            socket.emit('sendTextMessage', data);
         } catch (error) {
             console.error(error);
         }
-
-        setMessageText("");
-        setChosenFile(null);
     }
 
-    const sendPoll = (data: any) => {
-        const pollMessage = {
-            sender: users[1],
-            content: messageText,
-            contentType: 'poll',
-            question: data?.question,
-            options: data?.options
-        }
-        setMessages((prevMessages: any) => [...prevMessages, pollMessage]);
+    const handleVote = (submitData: any) => {
+        // update the state
+        setMessages((prevMessages: any[]) => {
+            return prevMessages.map((message: any) => {
+                if (message._id === submitData.messageID) {
+                    const updatedOptions = message.options.map((option: any) => {
+                        if (option.id === submitData.option.id) {
+                            option.votes.push(myUser);
+                        }
+                        return option;
+                    });
+                    message.options = updatedOptions;
+                }
+                return message;
+            });
+        });
 
-        setMessageText("");
-        setChosenFile(null);
-        setIsPollModalOpen(false);
-    }
-
-    const handleVote = (message: any, optionID: any) => {
-        //  send poll update
-    }
-
-    const sendFile = () => {
         const data = {
-            sender: users[0],
-            content: messageText,
-            contentType: 'file',
-            file: chosenFile,
-            fileMetadata: {
-                name: fileMetadata.name,
-                type: fileMetadata.type,
-                size: fileMetadata.size
-            }
-        };
-
-        // AFTER upload
-        const fileMessage = {
-            sender: users[0],
-            content: messageText,
-            contentType: 'file',
-            fileUrl: 'https://firebasestorage.googleapis.com/v0/b/chatapp-ce281.appspot.com/o/Authentication.png?alt=media&token=bd3b2da8-1589-4634-a65b-2a39c38d8da3',
-            fileMetadata: data.fileMetadata
+            option: submitData.option,
+            voter: myUser,
+            messageID: submitData.messageID,
+            room: roomID
         }
-
-        setMessages((prevMessages: any) => [...prevMessages, fileMessage]);
-
-        // send message
-
-        setMessageText("");
-        setChosenFile(null);
+        socket.emit('votePollOption', data);
     }
 
-    const sendCode = (data: any) => {
-        const socketData = {
-            sender: users[0],
-            content: messageText,
-            contentType: 'code',
-            snippet: data?.code,
-            language: data?.language
+    const uploadFileToApi = async () => {
+        const formData = new FormData();
+        formData.append("contentType", 'file');
+        formData.append("textContent", messageText);
+        formData.append("senderID", myUser.id);
+        formData.append("senderName", myUser.name);
+        formData.append("fileName", fileMetadata.name);
+        formData.append("fileSize", fileMetadata.size);
+        formData.append("fileType", fileMetadata.type);
+        formData.append("file", chosenFile);
+
+        try {
+            const response = await axios.post("http://localhost:4000/api/v1/messages/", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            console.log("FILE UPLOAD RESPONSE ", response)
+            return response.data;
+        } catch (error) {
+            throw error;
         }
-
-        // send message
-
-        const message = {
-            sender: users[0],
-            content: messageText,
-            contentType: 'code',
-            snippet: data?.code,
-            language: data?.language
-        }
-        setMessages((prevMessages: any) => [...prevMessages, message]);
-
-
-        setMessageText("");
-        setChosenFile(null);
-        setIsCodeModalOpen(false);
     }
 
     return (
@@ -417,7 +414,6 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
                 {
                     !!messages && !!users && messages.map((message: any, index: any) => {
                         const sender = message?.sender;
-                        const content = message.content;
                         const userColor = userColors[sender.id];
 
                         if (message?.contentType && message?.contentType === 'poll') {
@@ -428,14 +424,12 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
                             return <PollMessage
                                 key={index}
                                 myUser={myUser}
-                                sender={sender}
+                                message={message}
                                 userColor={userColor}
-                                content={content}
                                 question={question}
                                 options={options}
                                 totalVotes={totalVotes}
                                 onUpdate={handleVote}
-                                scrollableContainerRef={messageContainerRef}
                             />
                         } else if (message?.contentType && message?.contentType === 'file') {
                             const fileMetadata = message?.fileMetadata;
@@ -447,9 +441,8 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
 
                             return <FileMessage
                                 key={index}
-                                sender={sender}
+                                message={message}
                                 userColor={userColor}
-                                content={content}
                                 icon={icon}
                                 name={name}
                                 type={type}
@@ -462,9 +455,8 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
 
                             return <CodeMessage
                                 key={index}
-                                sender={sender}
+                                message={message}
                                 userColor={userColor}
-                                content={content}
                                 code={snippet}
                                 language={language}
                             />
@@ -473,9 +465,8 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
                             return (
                                 <Message
                                     key={index}
-                                    sender={sender}
-                                    userColor={userColor}
-                                    content={content} />
+                                    message={message}
+                                    userColor={userColor} />
                             );
                         }
                     })
@@ -524,7 +515,7 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
                         <Picker data={data} onEmojiSelect={handleEmojiChange} />
                     </div>
                 </span>}
-                <button onClick={sendMessage} className='chat-collapse__input-bar__send-btn chat-collapse__input-bar__button'>
+                <button onClick={handleClickSendBtn} className='chat-collapse__input-bar__send-btn chat-collapse__input-bar__button'>
                     <FontAwesomeIcon icon={faPaperPlane} className='icon' style={{ color: '#1c9dea' }} />
                 </button>
             </div>
@@ -535,22 +526,11 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID }
                 </div>
                 : <></>}
             {isCodeModalOpen && (
-                <Modal
-                    header={(<span className='code-modal__header'>
-                        <FontAwesomeIcon icon={faCode} style={{ fontSize: '40px' }} />
-                        <h2>Code</h2>
-                    </span>)}
-                    content={(<CodeEditor onSubmit={sendCode} />)}
-                    onClose={toggleCodeModalOpen}
-                />
+                <CodeEditor onSubmit={sendMessage} onClose={toggleCodeModalOpen} />
             )}
             {isPollModalOpen && (
-                <Modal
-                    header={(<span className='poll-modal__header'>
-                        <FontAwesomeIcon icon={faPoll} style={{ fontSize: '40px' }} />
-                        <h2>Poll</h2>
-                    </span>)}
-                    content={(<PollForm onSubmit={sendPoll} />)}
+                <PollForm
+                    onSubmit={sendMessage}
                     onClose={togglePollModalOpen}
                 />
             )}

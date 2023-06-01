@@ -19,6 +19,7 @@
     min-width: 450px;
     max-width: 500px;
     min-height: 300px;
+    padding-bottom: 10px;
     width: fit-content;
     background-color: #191b1f;
 }
@@ -51,4 +52,14 @@
 .modal__content {
     color: #d6d9dc;
     padding: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.modal__footer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
 }

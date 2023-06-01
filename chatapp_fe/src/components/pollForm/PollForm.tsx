@@ -1,83 +1,116 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import "./pollForm.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlusCircle, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faPlusCircle, faTrash, faPoll } from '@fortawesome/free-solid-svg-icons'
 import { v4 as uuidv4 } from 'uuid';
+import Modal from '../modal/Modal';
 
-export default function PollForm({ onSubmit }: any) {
+export default function PollForm({ onSubmit, onClose }: any) {
     const [question, setQuestion] = useState<string>("");
-    const [options, setOptions] = useState<any>({
-        'someId': ''
-    });
+    const [options, setOptions] = useState<any[]>([]);
     const [optionsNum, setOptionsNum] = useState<number>(1);
 
-    const addOption = () => {
+    useEffect(() => {
         const uniqueId = uuidv4();
         setOptions((prevOptions: any) => {
-            return {
-                ...prevOptions,
-                [uniqueId]: ""
-            }
+            return [...prevOptions, {
+                id: uniqueId,
+                text: '',
+                votes: []
+            }]
         });
-        setOptionsNum((prevOptionsNum) => prevOptionsNum + 1);
-    }
+    }, []);
 
+    const addOption = () => {
+        if (optionsNum < 10) {
+            const uniqueId = uuidv4();
+            setOptions((prevOptions: any) => {
+                return [...prevOptions, {
+                    id: uniqueId,
+                    text: '',
+                    votes: []
+                }]
+            });
+            setOptionsNum((prevOptionsNum) => prevOptionsNum + 1);
+        }
+    }
 
     const removeOption = (id: string) => {
         if (optionsNum > 1) {
-            const optionsCopy: any = { ...options };
-            delete optionsCopy[id];
-            setOptions(optionsCopy);
+            const updatedOptions = options.filter((option: any) => option.id !== id);
+            setOptions(updatedOptions);
             setOptionsNum((prevOptionsNum) => prevOptionsNum - 1);
         }
     }
 
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>, id: any) => {
-        setOptions((prevOptions: any) => {
-            return {
-                ...prevOptions,
-                [id]: e.target.value
-            }
-        });
+    const handleQuestionChange = (e: any) => {
+        setQuestion(e.target.value);
     }
 
-    /* const handleSubmit = () => {
-        const optionsArray = Object.keys(options).map((option: string) => options[option]);
-        onSubmit(optionsArray);
-    }; */
+    const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>, id: any) => {
+        const updatedOptions = options.map((option: any) => {
+            if (option.id === id) {
+                return { ...option, text: e.target.value };
+            }
+            return option;
+        });
+        setOptions(updatedOptions);
+    }
 
     const handleSubmit = () => {
-        onSubmit({ question, options });
+        if (question.trim() === "") {
+            alert("Please, add a question")
+            return;
+        }
+        if (options.length <= 1) {
+            alert("Please, add at least two options")
+            return;
+        }
+
+        onClose();
+        onSubmit('poll', { question, options });
     };
 
     return (
-        <div className='poll-form'>
-            <label htmlFor="question" style={{ marginTop: '10px' }}>Question:</label>
-            <input type="text" id="question" />
-            <hr style={{ width: '100%', color: '#ddd' }} />
-            <label className='poll-form__options__label'>Options:</label>
-            <div className='poll-form__options'>
-                {Object.keys(options).map((option: any) => {
-                    return (
-                        <div key={option} className='poll-form__option'>
-                            <input
-                                type="text"
-                                id={option}
-                                value={options[option]}
-                                onChange={(e) => handleChange(e, option)}
-                            />
-                            <button onClick={() => removeOption(option)}>
-                                <FontAwesomeIcon icon={faTrash} style={{ fontSize: '17px', marginLeft: '15px' }} />
-                            </button>
+        <>
+            <Modal
+                header={(<span className='poll-modal__header'>
+                    <FontAwesomeIcon icon={faPoll} style={{ fontSize: '40px' }} />
+                    <h2>Poll</h2>
+                </span>)}
+                content={(
+                    <div className='poll-form'>
+                        <label htmlFor="question" style={{ marginTop: '10px' }}>Question:</label>
+                        <input type="text" id="question" onChange={handleQuestionChange} value={question} />
+                        <hr style={{ width: '100%', color: '#ddd' }} />
+                        <label className='poll-form__options__label'>Options:</label>
+                        <div className='poll-form__options'>
+                            {options.map((option: any) => {
+                                return (
+                                    <div key={option.id} className='poll-form__option'>
+                                        <input
+                                            type="text"
+                                            id={option.id}
+                                            value={option.text}
+                                            onChange={(e) => handleOptionChange(e, option.id)}
+                                        />
+                                        <button onClick={() => removeOption(option.id)}>
+                                            <FontAwesomeIcon icon={faTrash} style={{ fontSize: '17px', marginLeft: '15px' }} />
+                                        </button>
+                                    </div>
+                                );
+                            })}
                         </div>
-                    );
-                })}
-            </div>
-            <button className="poll-form__add-btn" onClick={addOption}>
-                <FontAwesomeIcon icon={faPlusCircle} style={{ fontSize: '20px', marginRight: '7px', color: 'green' }} /> Add option
-            </button>
-            <button onClick={handleSubmit} className='poll-form__submit-btn'>Create poll</button>
-        </div>
+                        <button className="poll-form__add-btn" onClick={addOption}>
+                            <FontAwesomeIcon icon={faPlusCircle} style={{ fontSize: '20px', marginRight: '7px', color: 'green' }} /> Add option
+                        </button>
+                    </div>
+                )}
+                footer={(
+                    <button onClick={handleSubmit} className='poll-form__submit-btn'>Create poll</button>
+                )}
+                onClose={onClose}
+            />
+        </>
     );
 }

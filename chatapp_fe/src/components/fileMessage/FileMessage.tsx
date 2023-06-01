@@ -6,7 +6,18 @@ import { faCircleDown } from '@fortawesome/free-regular-svg-icons'
 import Message from '../message/Message'
 import { saveAs } from 'file-saver';
 
-export default function FileMessage({ sender, userColor, content, icon, name, type, size, fileUrl }: any) {
+export default function FileMessage({
+    message,
+    userColor,
+    icon,
+    name,
+    type,
+    size,
+    fileUrl
+}: any) {
+
+    const sender = message.sender;
+    const content = message.content;
 
     const handleDownload = async () => {
         try {
@@ -19,7 +30,7 @@ export default function FileMessage({ sender, userColor, content, icon, name, ty
     };
     return (
         <div className='file-message'>
-            <Message sender={sender} userColor={userColor} content={content} />
+            <Message message={message} userColor={userColor} />
             <div className="file-message__container">
                 <div className="file-message__icon">
                     {icon}

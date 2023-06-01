@@ -3,7 +3,7 @@ import './Modal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClose } from '@fortawesome/free-solid-svg-icons'
 
-const Modal = ({ header, content, onClose }: any) => {
+const Modal = ({ header, content, footer, onClose }: any) => {
     useEffect(() => {
         const handleOutsideClick = (e: any) => {
             if (e.target.classList.contains('modal__overlay')) {
@@ -28,6 +28,7 @@ const Modal = ({ header, content, onClose }: any) => {
                     </button>
                 </div>
                 <div className="modal__content">{content}</div>
+                <div className="modal__footer">{footer}</div>
             </div>
         </div>
     );

@@ -46,6 +46,7 @@ export const initializeSocket = (io: any) => {
             if (roomUsers[roomID]) {
                 const length: number = roomUsers[roomID].length;
                 if (length >= 4) {
+                    console.log("roomFull")
                     socket.emit("roomFull");
                     return;
                 }
@@ -86,8 +87,14 @@ export const initializeSocket = (io: any) => {
         });
 
         socket.on('sendTextMessage', (data: any) => {
-            console.log("Message: " + data.message + ", To room: " + data.room);
+            console.log("Message: " + data.message.textContent + ", To room: " + data.room);
             socket.to(data.room).emit("receiveTextMessage", data.message);
+        });
+
+        socket.on('votePollOption', (data: any) => {
+            console.log(data.option)
+            console.log("User " + data.voter.id + " voted " + data.option.id + " of message " + data.messageID + " in room: " + data.room);
+            socket.to(data.room).emit("updatePollMessage", data);
         });
 
         socket.on("muteForAll", (id: any) => {
@@ -111,7 +118,7 @@ export const initializeSocket = (io: any) => {
         });
 
         socket.on('disconnect', () => {
-            console.log('🔥: A user disconnected');
+            console.log('🔥: user ' + socket.id + ' disconnected');
             delete users[socket.id];
 
             const roomID = socketToRoom[socket.id];
