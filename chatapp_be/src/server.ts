@@ -3,6 +3,7 @@ import { initializeSocket } from './sockets/socketsHandler';
 import { processImage, uploadFile } from './utils/fileUtils';
 import { Server, Socket } from 'socket.io';
 
+
 require('dotenv').config();
 const mongoose = require('mongoose');
 const path = require('path');
@@ -27,7 +28,7 @@ const io = new Server(server, {
         origin: "http://localhost:3000",
     }
 });
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 mongoose.connect(dbUrl, {
     useNewUrlParser: true,
@@ -38,8 +39,6 @@ mongoose.connect(dbUrl, {
     console.error('Failed to connect to MongoDB:', err);
 });
 
-// Set static folder
-/* app.use(express.static(path.join(__dirname, '../public'))); */
 app.use(cors());
 app.use(bodyParser.json());
 app.use(processImage);
