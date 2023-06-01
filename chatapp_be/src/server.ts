@@ -4,12 +4,16 @@ import { processImage, uploadFile } from './utils/fileUtils';
 import { Server, Socket } from 'socket.io';
 
 
-/* require('dotenv').config(); */
 const mongoose = require('mongoose');
 const path = require('path');
 const http = require('http');
 const cors = require('cors');
 const bodyParser = require("body-parser");
+
+if (process.env.NODE_ENV === 'development') {
+    require('dotenv').config();
+}
+
 const dbPass = process.env.MONGODB_PASSWORD;
 const dbUrl = `mongodb+srv://adelorenzis:${dbPass}@cluster0.bijyvlq.mongodb.net/?retryWrites=true&w=majority`;
 const { swaggerDocs: V1SwaggerDocs } = require("./swagger");

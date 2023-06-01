@@ -17,6 +17,7 @@ import CodeEditor from '../codeEditor/CodeEditor'
 import CodeMessage from '../codeMessage/CodeMessage'
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios'
+import { getApiUrl } from '../../utils/appUtils'
 
 /*
 
@@ -344,7 +345,7 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
 
         // POST message to api
         try {
-            await axios.post("http://localhost:4000/api/v1/messages/", message);
+            await axios.post(getApiUrl() + "/api/v1/messages/", message);
         } catch (error) {
             console.error(error);
         }
@@ -388,7 +389,7 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
         formData.append("file", chosenFile);
 
         try {
-            const response = await axios.post("http://localhost:4000/api/v1/messages/", formData, {
+            const response = await axios.post(getApiUrl() + "/api/v1/messages/", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
