@@ -27,11 +27,17 @@ const globalUser = require('./utils/authUtils');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: "http://localhost:3000",
-    }
-});
+let io: any;
+
+if (process.env.NODE_ENV === 'development') {
+    io = new Server(server, {
+        cors: {
+            origin: "http://localhost:3000",
+        }
+    });
+} else {
+    io = new Server(server);
+}
 const port = process.env.PORT || 4000;
 
 mongoose.connect(dbUrl, {
