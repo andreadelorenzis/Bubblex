@@ -28,12 +28,8 @@
 }
 
 .videocall__container--massive {
-    max-width: 1335px;
+    max-width: 745px;
     margin-top: 50px;
-}
-
-.videocall__container--massive {
-    max-width: 700px;
 }
 
 .videocall__title {
@@ -46,6 +42,7 @@
 
 .videocall__videos {
     /* Adjust the maximum width of the container as needed */
+    position: relative;
     width: 100%;
     margin-bottom: 20px;
 }
@@ -200,6 +197,8 @@
     margin-left: 14px;
 }
 
+.videocall__videos__user-card__video--not-active {}
+
 .videocall__user-card__name {
     position: absolute;
     bottom: 10px;
@@ -221,7 +220,7 @@
     left: 50%;
     transform: translateX(-50%); */
     transition: all 0.5s ease;
-    margin-top: auto;
+    margin-top: 20px;
 }
 
 .videocall__buttons>button>.icon {
@@ -273,4 +272,45 @@
     width: 200px;
     height: 100vh;
     background: #e73e41;
+}
+
+.videocall__videos__user-card__placeholder {
+    position: relative;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Set the desired aspect ratio (e.g., 1:1 for square, 16:9 for widescreen) */
+    aspect-ratio: 16/9;
+    transition: all 0.3s ease;
+    flex: 1;
+    width: 745px;
+    border-radius: 10px;
+}
+
+.videocall__videos__user-card__placeholder__icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none;
+}
+
+.videocall__videos__user-card__placeholder__icon--active {
+    display: flex;
+}
+
+.videocall__videos__user-card__video {
+    position: relative;
+}
+
+.videocall__videos__user-card__video--not-active {
+    background-color: black;
 }

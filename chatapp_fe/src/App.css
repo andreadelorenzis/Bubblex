@@ -118,7 +118,11 @@ ul {
 }
 
 p {
-  font-size: ;
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 h1 {
@@ -145,6 +149,14 @@ input {
 body {
   background-color: #191b1f;
   font-family: 'Poppins', sans-serif;
+}
+
+pre {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 video {

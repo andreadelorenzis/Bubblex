@@ -31,13 +31,6 @@ export default function LandingPage({ socket, onSubmit }: any) {
         navigate("/videochat/" + roomname + "/" + username);
     }
 
-    const modalCreatorHeader = (
-        <>
-            <FontAwesomeIcon icon={faHandPeace} style={{ color: '#ffc83d', fontSize: '25px', marginRight: '10px' }} />
-            <h2>Create room</h2>
-        </>
-    );
-
     return (
         <div className='landing'>
             <div className="landing__nav">
@@ -54,11 +47,7 @@ export default function LandingPage({ socket, onSubmit }: any) {
                 </div>
             </div>
             <div className="landing__footer"></div>
-            {isRoomModalOpen && <Modal
-                header={modalCreatorHeader}
-                content={<RoomCreator onSubmit={handleRoomSubmit} />}
-                onClose={toggleRoomCreatorModal}
-            />}
+            {isRoomModalOpen && <RoomCreator onSubmit={handleRoomSubmit} onClose={toggleRoomCreatorModal} />}
         </div>
     )
 }

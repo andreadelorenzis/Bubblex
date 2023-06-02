@@ -1,0 +1,39 @@
+.error-popup-container {
+    width: 400px;
+    background-color: #333;
+    color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.error-popup {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.error-popup-icon {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.error-popup-message {
+    font-size: 16px;
+    flex-grow: 1;
+}
+
+.error-popup-close {
+    background-color: transparent;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    width: 100px;
+}
+
+.error-popup-close:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}

@@ -4,11 +4,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlusCircle, faTrash, faPoll } from '@fortawesome/free-solid-svg-icons'
 import { v4 as uuidv4 } from 'uuid';
 import Modal from '../modal/Modal';
+import ErrorAlert from '../errorAlert/ErrorAlert';
 
 export default function PollForm({ onSubmit, onClose }: any) {
     const [question, setQuestion] = useState<string>("");
     const [options, setOptions] = useState<any[]>([]);
     const [optionsNum, setOptionsNum] = useState<number>(1);
+    const [error, setError] = useState<string>("");
 
     useEffect(() => {
         const uniqueId = uuidv4();
@@ -59,11 +61,11 @@ export default function PollForm({ onSubmit, onClose }: any) {
 
     const handleSubmit = () => {
         if (question.trim() === "") {
-            alert("Please, add a question")
+            setError("Please, add a question")
             return;
         }
         if (options.length <= 1) {
-            alert("Please, add at least two options")
+            setError("Please, add at least two options")
             return;
         }
 
@@ -111,6 +113,7 @@ export default function PollForm({ onSubmit, onClose }: any) {
                 )}
                 onClose={onClose}
             />
+            {!!error && <ErrorAlert message={error} onClose={() => { setError("") }} />}
         </>
     );
 }

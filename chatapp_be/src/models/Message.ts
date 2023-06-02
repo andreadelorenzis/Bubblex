@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 export interface IMessage extends Document {
     sender: any;
     chat?: any;
+    room?: any;
     contentType: string;
     timestamp: Date;
     textContent: string;
@@ -31,6 +32,9 @@ const messageSchema: Schema = new Schema<IMessage>({
             type: String,
             required: true
         }
+    },
+    room: {
+        type: String,
     },
     chat: {
         type: Schema.Types.ObjectId,

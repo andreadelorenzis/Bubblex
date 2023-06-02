@@ -3,10 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import './videocall.css'
 import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser, faVideoCamera, faMicrophone, faShareFromSquare, faMessage, faPhoneSlash, faMicrophoneSlash, faVideoSlash, faEllipsisVertical, faVolumeXmark, faVolumeHigh } from '@fortawesome/free-solid-svg-icons'
+import { faUser, faUserCircle, faVideoCamera, faMicrophone, faShareFromSquare, faMessage, faPhoneSlash, faMicrophoneSlash, faVideoSlash, faEllipsisVertical, faVolumeXmark, faVolumeHigh } from '@fortawesome/free-solid-svg-icons'
 import ChatCollapsable from '../../components/chatCollapsable/ChatCollapsable'
 import { v4 as uuidv4 } from 'uuid';
 import SimplePeer from "simple-peer";
+import ErrorAlert from '../../components/errorAlert/ErrorAlert'
+import { getApiUrl } from '../../utils/appUtils'
 
 /**
  * Considerazioni:
@@ -185,11 +187,15 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     const [mouseMoved, setMouseMoved] = useState<boolean>(false);
     const [screenShared, setScreenShared] = useState<boolean>(false);
     const [myUser, setMyUser] = useState<any>({});
-    const [initVideo, setInitVideo] = useState<any>(null);
     const [screenShareStream, setScreenShareStream] = useState<any>(null);
-
+    const [userColors, setUsersColors] = useState<any>({});
     const [isMicMutedByAdmin, setIsMicMutedByAdmin] = useState<boolean>(false);
     const [isCameraHiddenByAdmin, setIsCameraHiddenByAdmin] = useState<boolean>(false);
+    const [showPlaceholder, setShowPlaceholder] = useState<boolean>(false);
+    const [initCamera, setInitCamera] = useState<boolean>(false);
+    const [remoteUsersControls, setRemoteUsersControls] = useState<any>(null);
+
+    const [error, setError] = useState<string>("");
 
     const localStream: any = useRef();
     const userVideo: any = useRef();
@@ -230,13 +236,28 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
         if (userVideo.current) {
             userVideo.current.srcObject = localStream.current;
         }
-    }, [pinnedVideo, notPinnedUsers, users, initVideo]);
+    }, [pinnedVideo, notPinnedUsers, users, initCamera]);
 
     useEffect(() => {
         if (!amOwner && !amInvited) {
             navigate("/inviter/" + roomID);
             return;
         }
+
+        socket.emit("joinChat", {
+            roomID: roomID,
+            username: username
+        });
+
+        socket.once("allChatUsers", (data: any) => {
+            console.log("CHAT USERS: ,", data.users)
+            const usersList: any[] = data.users;
+            const myUser: any = data.myUser;
+            // Creating all the users
+            setUsers(usersList);
+            setMyUser(myUser);
+            setNotPinnedUsers(usersList);
+        });
 
         const initCamera = () => {
             console.log("Dentro 1")
@@ -256,7 +277,7 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     hideCam();
                 }
 
-                setInitVideo(<video id={uuidv4()} className="videocall__videos__user-card__video" ref={userVideo} autoPlay playsInline></video>)
+                setInitCamera(true);
 
                 socket.emit("joinRoom", {
                     roomID: roomID,
@@ -268,12 +289,11 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     console.log("dentro 3")
                     console.log("Setting the stream for the existent participants");
                     const usersList: any[] = data.users;
-                    console.log("Received users", data.users)
                     const myUser: any = data.myUser;
-                    // Creating all the users
                     setUsers(usersList);
                     setMyUser(myUser);
-                    setNotPinnedUsers(usersList);
+                    console.log("Received users", data.users)
+                    // Creating all the users
                     console.log(data);
 
                     const peersCopy: any[] = [];
@@ -331,11 +351,32 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     setIsCameraHiddenByAdmin(false);
                 });
 
-                socket.on("userJoined", handleUserJoined);
-                socket.on("receivingReturnSignal", handleReceivingReturnSignal);
+                socket.on("cameraHiddenByUser", (id: any) => {
+                    changeRemoteUsersControls('cameraHiddenByUser', id);
+                });
 
+                socket.on("cameraShowedByUser", (id: any) => {
+                    changeRemoteUsersControls('cameraShowedByUser', id);
+                });
+
+                socket.on("micMutedByUser", (id: any) => {
+                    changeRemoteUsersControls('micMutedByUser', id);
+                });
+
+
+                socket.on("micUnmutedByUser", (id: any) => {
+                    changeRemoteUsersControls('micUnmutedByUser', id);
+                });
+
+            }).catch((err: any) => {
+                console.error(err)
+                setVideoActive(false);
+                setMicrophoneActive(false);
+                setInitCamera(true);
             })
         }
+
+        initCamera();
 
         const handleUserJoined = (payload: any) => {
             const signal = payload.signal;
@@ -394,7 +435,8 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
             item.peer.signal(payload.signal);
         }
 
-        initCamera();
+        socket.on("userJoined", handleUserJoined);
+        socket.on("receivingReturnSignal", handleReceivingReturnSignal);
 
         return () => {
             socket.off("userJoined", handleUserJoined);
@@ -406,20 +448,33 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     p.peer.destroy();
                     p.cleanup();
                 } catch (error) {
+                    setError("Error on destroy: " + error);
                     console.error("Error on destroy: ", error);
                 }
             });
-
         };
 
-
     }, []);
+
+    useEffect(() => {
+        // Emit the signal to let the peer know if I'm showing camera/mic or not
+        if (!videoActive) {
+            socket.emit("userHideCam", myUser.id);
+        }
+        if (!microphoneActive) {
+            socket.emit("userMuteMic", myUser.id);
+        }
+    }, [videoActive, microphoneActive, users]);
+
 
     useEffect(() => {
         console.log("All peers ", peers);
         console.log("All users ", users);
         console.log("All remote streams ", remoteStreams);
-    }, [peers, users, remoteStreams]);
+        console.log("My user ", myUser);
+        console.log("User colors ", userColors);
+        console.log("Remote user controls ", remoteUsersControls);
+    }, [peers, users, remoteStreams, remoteUsersControls]);
 
 
     useEffect(() => {
@@ -461,6 +516,7 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     const updatedPeerRefs = remotePeerRefs.current.filter((p: any) => p.peerID !== id);
                     remotePeerRefs.current = updatedPeerRefs;
                 } catch (error: any) {
+                    setError("Error on destroy: " + error);
                     console.error("Error on destroy: ", error);
                 }
             }
@@ -486,20 +542,129 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
             removePeer(id);
         }
 
+        // Method called right before the browser tab is closed
+        const handleBeforeUnload = (e: any) => {
+
+            // If I'm the last user, delete all the messages in the room
+            if (users.length === 1) {
+                deleteAllMessages();
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
         socket.on("userLeft", handleUserLeft);
 
         return (() => {
             socket.off("userLeft", handleUserLeft);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+
+            // If I'm the last user, delete all the messages in the room
+            if (users.length === 1) {
+                deleteAllMessages();
+            }
         })
 
     }, [users, remotePeerRefs, peers, setPeers, setUsers, setNotPinnedUsers, setRemoteStreams, pinnedUser]);
 
+    useEffect(() => {
+        // Set the color for the usernames
+        const assignedColors = assignRandomColors(users);
+        setUsersColors(assignedColors);
+    }, [users]);
+
+    const assignRandomColors = (users: any[]) => {
+        const colors = ['#ed4245', '#5865f2', '#faa61a', '#757e8a', '#3ba55c', '#b24ea1']; // List of available colors
+        const assignedColors: any = {};
+
+        users.forEach((user) => {
+            // Check if the user already has an assigned color
+            if (userColors[user.id]) {
+                // Assign the existing color to the user
+                assignedColors[user.id] = userColors[user.id];
+
+                // Remove the color
+                const index = colors.indexOf(user.color);
+                if (index !== -1) {
+                    colors.splice(index, 1); // Remove the color from the available colors
+                }
+            } else {
+                // Generate a random index within the available colors array
+                const randomIndex = Math.floor(Math.random() * colors.length);
+
+                // Assign the color to the user
+                assignedColors[user.id] = colors[randomIndex];
+
+                // Remove the assigned color from the available colors array to avoid repetition
+                colors.splice(randomIndex, 1);
+            }
+        });
+
+        return assignedColors;
+    }
+
+    const changeRemoteUsersControls = (
+        event: 'cameraHiddenByUser' | 'cameraShowedByUser' | 'micMutedByUser' | 'micUnmutedByUser',
+        userId: string
+    ): void => {
+        setRemoteUsersControls((prevRemoteUsers: any) => {
+            const updatedRemoteUsers: any = { ...prevRemoteUsers };
+
+            switch (event) {
+                case 'cameraHiddenByUser':
+                    updatedRemoteUsers[userId] = {
+                        ...updatedRemoteUsers[userId],
+                        videoActive: false,
+                    };
+                    break;
+
+                case 'cameraShowedByUser':
+                    updatedRemoteUsers[userId] = {
+                        ...updatedRemoteUsers[userId],
+                        videoActive: true,
+                    };
+                    break;
+
+                case 'micMutedByUser':
+                    updatedRemoteUsers[userId] = {
+                        ...updatedRemoteUsers[userId],
+                        micActive: false,
+                    };
+                    break;
+
+                case 'micUnmutedByUser':
+                    updatedRemoteUsers[userId] = {
+                        ...updatedRemoteUsers[userId],
+                        micActive: true,
+                    };
+                    break;
+
+                default:
+                    // Handle unsupported event types, if needed
+                    break;
+            }
+
+            return updatedRemoteUsers;
+        });
+    };
+
+    const deleteAllMessages = () => {
+        console.log("Deleting all messages")
+        const deleteAllMessage = async () => {
+            try {
+                const result = await axios.delete(`${getApiUrl()}/api/v1/messages/room/${roomID}`);
+            } catch (error) {
+                console.error(error)
+            }
+        }
+        deleteAllMessage();
+    }
 
     const muteMic = () => {
         if (localStream.current) {
             const audioTrack = localStream.current.getTracks().find((track: any) => track.kind === 'audio');
             audioTrack.enabled = false;
             setMicrophoneActive(false);
+            socket.emit("userMuteMic", myUser.id);
         }
     }
 
@@ -508,11 +673,13 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
             const audioTrack = localStream.current.getTracks().find((track: any) => track.kind === 'audio');
             audioTrack.enabled = true;
             setMicrophoneActive(true);
+            socket.emit("userUnmuteMic", myUser.id);
         }
     }
 
     const hideCam = () => {
         if (localStream.current) {
+            socket.emit("userHideCam", myUser.id);
             const videoTrack = localStream.current.getTracks().find((track: any) => track.kind === 'video');
             videoTrack.enabled = false;
             setVideoActive(false);
@@ -521,6 +688,7 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
 
     const showCam = () => {
         if (localStream.current) {
+            socket.emit('userShowCamera', myUser.id);
             const videoTrack = localStream.current.getTracks().find((track: any) => track.kind === 'video');
             videoTrack.enabled = true;
             setVideoActive(true);
@@ -663,28 +831,31 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     }
 
     const handleVideoCameraBtnClick = () => {
+        setVideoActive(!videoActive);
         if (localStream.current) {
             const videoTrack = localStream.current.getTracks().find((track: any) => track.kind === 'video');
             if (videoActive) {
                 setVideoActive(false);
                 if (videoTrack && videoTrack.enabled) {
                     videoTrack.enabled = false;
+                    socket.emit('userHideCam', myUser.id);
                 }
             } else {
                 setVideoActive(true);
                 if (videoTrack && !videoTrack.enabled) {
                     videoTrack.enabled = true;
+                    socket.emit('userShowCamera', myUser.id)
                 }
             }
         }
     }
 
     const toggleVideoBlockedModal = () => {
-        alert("Video blocked by admin");
+        setError("Your video has been blocked by the admin of the call");
     }
 
     const toggleMicBlockedModal = () => {
-        alert("Mic blocked by admin")
+        setError("Your microphone has been blocked by the admin of the call")
     }
 
     const handleMicrophoneBtnClick = () => {
@@ -744,7 +915,11 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
         }
     }
 
-    const renderNotPinnedVideoBoxes = useMemo((): ReactNode => {
+    const handleShowPlaceholder = () => {
+        setShowPlaceholder(!showPlaceholder)
+    }
+
+    const renderNotPinnedVideoBoxes = () => {
         const boxes = [];
 
         let classes = 'videocall__videos__user-card';
@@ -764,7 +939,6 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                 console.log(userVideo.current.srcObject)
             }
             const remoteStream: any = remoteStreams.find((streamEl: any) => streamEl.userID === user.id);
-            if (!!remoteStream) console.log("Remote stream of " + user.id, remoteStream.stream)
 
             boxes.push(
                 <div
@@ -774,7 +948,13 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     onClick={() => pinUser(user)}
                 >
                     {user.id === myUser.id
-                        ? <video id={uuidv4()} className="videocall__videos__user-card__video" ref={userVideo} autoPlay playsInline></video>
+                        ? <video
+                            id={uuidv4()}
+                            className={`videocall__videos__user-card__video ${!videoActive ? 'videocall__videos__user-card__video--not-active' : ''}`}
+                            ref={userVideo}
+                            autoPlay
+                            playsInline>
+                        </video>
                         : <Video
                             peerID={user.id}
                             stream={!!remoteStream ? remoteStream.stream : null}
@@ -782,22 +962,32 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                             amOwner={amOwner}
                             socket={socket}>
                         </Video>}
-                    <FontAwesomeIcon icon={faUser} />
                     <span className={`videocall__user-card__name ${showControls ? '' : 'videocall--hide'}`}>{user.name}</span>
+                    {user.id === myUser.id && <div
+                        className={`videocall__videos__user-card__placeholder__icon ${!videoActive ? 'videocall__videos__user-card__placeholder__icon--active' : ''}`}
+                        style={{ backgroundColor: userColors[myUser.id] }}
+                    >
+                        <FontAwesomeIcon icon={faUser} className='icon' color="white" fontSize="50px" />
+                    </div>}
+                    {!!remoteUsersControls && !!remoteUsersControls[user.id] && !remoteUsersControls[user.id].videoActive && <div
+                        className={`videocall__videos__user-card__placeholder__icon videocall__videos__user-card__placeholder__icon--active`}
+                        style={{ backgroundColor: userColors[user.id] }}
+                    >
+                        <FontAwesomeIcon icon={faUser} className='icon' color="white" fontSize="50px" />
+                    </div>}
                 </div>
             );
         }
 
         return boxes || <></>;
-    }, [pinnedVideo, users, notPinnedUsers, initVideo, remoteStreams, showControls]);
+    }
 
-    const renderPinnedVideoBox = useMemo((): ReactNode => {
+    const renderPinnedVideoBox = () => {
         if (!!pinnedUser) {
             if (userVideo.current) {
                 console.log(userVideo.current.srcObject)
             }
             const remoteStream: any = remoteStreams.find((streamEl: any) => streamEl.userID === pinnedUser.id);
-            if (!!remoteStream) console.log("Remote stream of " + pinnedUser.id, remoteStream.stream)
 
             return (
                 <div
@@ -805,7 +995,7 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     onClick={() => pinUser(pinnedUser)}
                 >
                     {pinnedUser.id === myUser.id
-                        ? <video id={uuidv4()} className="videocall__videos__user-card__video" ref={userVideo} autoPlay playsInline></video>
+                        ? <video id={uuidv4()} className={`videocall__videos__user-card__video ${!showPlaceholder ? 'videocall__videos__user-card__video--not-active' : ''}`} ref={userVideo} autoPlay playsInline></video>
                         : <Video
                             peerID={pinnedUser.id}
                             stream={!!remoteStream ? remoteStream.stream : null}
@@ -815,30 +1005,49 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                         </Video>}
                     <FontAwesomeIcon icon={faUser} />
                     <span className={`videocall__user-card__name ${showControls ? '' : 'videocall--hide'}`}>{pinnedUser.name}</span>
+                    {pinnedUser.id === myUser.id && <div
+                        className={`videocall__videos__user-card__placeholder__icon ${!videoActive ? 'videocall__videos__user-card__placeholder__icon--active' : ''}`}
+                        style={{ backgroundColor: userColors[myUser.id] }}
+                    >
+                        <FontAwesomeIcon icon={faUser} className='icon' color="white" fontSize="50px" />
+                    </div>}
+                    {!!remoteUsersControls && !!remoteUsersControls[pinnedUser.id] && !remoteUsersControls[pinnedUser.id].videoActive && <div
+                        className={`videocall__videos__user-card__placeholder__icon videocall__videos__user-card__placeholder__icon--active`}
+                        style={{ backgroundColor: userColors[pinnedUser.id] }}
+                    >
+                        <FontAwesomeIcon icon={faUser} className='icon' color="white" fontSize="50px" />
+                    </div>}
                 </div>
             );
         } else {
             return <></>;
         }
-    }, [pinnedVideo, users, notPinnedUsers, initVideo, remoteStreams, showControls]);
+    }
 
     return (
         <div className='videocall'>
             <h3 className='videocall__title'>{roomID}</h3>
             <div className={`videocall__container ${!collapse ? 'videocall__container--chat-active' : ''}
                                                   ${users.length == 2 ? 'videocall__container--big' : ''}
-                                                  ${users.length == 1 ? 'videocall__container--massive' : ''}`}>
-                <div className="videocall__videos">
-                    <div className="videocall__videos__pinned">
-                        {renderPinnedVideoBox}
+                                                  ${users.length <= 1 ? 'videocall__container--massive' : ''}`}>
+                {!!users && users.length > 0
+                    ? <div className="videocall__videos">
+                        <div className="videocall__videos__pinned">
+                            {renderPinnedVideoBox()}
+                        </div>
+                        <div className={`${pinnedUser === null ? 'videocall__videos__not-pinned--grid' : 'videocall__videos__not-pinned--row'}`}>
+                            {renderNotPinnedVideoBoxes()}
+                        </div>
                     </div>
-                    <div className={`${pinnedUser === null ? 'videocall__videos__not-pinned--grid' : 'videocall__videos__not-pinned--row'}`}>
-                        {renderNotPinnedVideoBoxes}
-                    </div>
-                </div>
+                    : <div className='videocall__videos__user-card__placeholder'>
+                        <div className='videocall__videos__user-card__placeholder__icon'>
+                            <FontAwesomeIcon icon={faUser} className='icon' color="black" fontSize="50px" />
+                        </div>
+                    </div>}
                 <div className={`videocall__buttons ${showControls ? '' : 'videocall--hide'}`}>
                     <button
                         title={videoActive && !isCameraHiddenByAdmin ? 'switch off camera' : 'turn on camera'}
+                        onMouseUp={handleShowPlaceholder}
                         onClick={isCameraHiddenByAdmin ? toggleVideoBlockedModal : handleVideoCameraBtnClick}
                         className={videoActive && !isCameraHiddenByAdmin ? '' : 'videocall__buttons__button--inactive'}
                     >
@@ -869,7 +1078,9 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                 roomID={roomID}
                 users={users}
                 myUser={myUser}
+                userColors={userColors}
             />
+            {!!error && <ErrorAlert message={error} onClose={() => { setError("") }} />}
         </div>
     )
 }

@@ -3,9 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom'
 import "./roomInviter.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faVideoCamera, faVideoSlash, faMicrophone, faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons'
+import ErrorAlert from '../../components/errorAlert/ErrorAlert'
 
 export default function RoomInviter({ socket, onSubmit, microphoneActive, videoActive, setVideoActive, setMicrophoneActive }: any) {
     const [username, setUsername] = useState<string>("");
+    const [error, setError] = useState<string>("");
 
     const userVideo = useRef<any>(null);
     const localStream: any = useRef();
@@ -97,9 +99,20 @@ export default function RoomInviter({ socket, onSubmit, microphoneActive, videoA
         setUsername(e.target.value);
     }
 
+    const handleClickLogo = () => {
+        hideCam();
+        muteMic();
+        if (localStream.current) {
+            const videoTrack = localStream.current.getVideoTracks()[0];
+            videoTrack.stop();
+        }
+        socket.disconnect();
+        navigate("/");
+    }
+
     const handleSubmit = () => {
         if (username.trim() === "") {
-            alert("Please, add a username before entering the videocall.")
+            setError("Please, add a username before entering the videocall.");
             return;
         }
         onSubmit();
@@ -109,12 +122,18 @@ export default function RoomInviter({ socket, onSubmit, microphoneActive, videoA
     return (
         <div className='room-inviter'>
             <div className="room-inviter__nav">
-                <h1 className="landing__nav__logo">ChatApp</h1>
+                <h1 className="landing__nav__logo" onClick={handleClickLogo}>ChatApp</h1>
             </div>
             <div className="room-inviter__body">
                 <div className="room-inviter__body-left">
                     <div className="room-inviter__body-left__video-card">
                         <video className="video" ref={userVideo} autoPlay playsInline></video>
+                        <div
+                            className={`room-inviter__body-left__video-card__placeholder__icon ${!videoActive ? 'room-inviter__body-left__video-card__placeholder__icon--active' : ''}`}
+                            style={{ backgroundColor: "white" }}
+                        >
+                            <FontAwesomeIcon icon={faUser} className='icon' color="black" fontSize="50px" />
+                        </div>
                     </div>
                     <div className="room-inviter__body-left__video-controls">
                         <button
@@ -142,6 +161,7 @@ export default function RoomInviter({ socket, onSubmit, microphoneActive, videoA
                     <button className="room-inviter__submit-btn" onClick={handleSubmit}>Join in</button>
                 </div>
             </div>
+            {!!error && <ErrorAlert message={error} onClose={() => { setError("") }} />}
         </div>
     )
 }

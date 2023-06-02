@@ -1,0 +1,14 @@
+services:
+  - type: web
+    env: node
+    name: chatapp-backend1
+    repo: https://github.com/andreadelorenzis/ChatApp.git
+    rootDir: chatapp_be
+    buildCommand: tsc
+    startCommand: node ./dist/server.js
+    envVars:
+      - key
+  
+  - type: web
+    env: static
+    name: chatapp-frontend1

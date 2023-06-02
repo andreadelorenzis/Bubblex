@@ -120,6 +120,16 @@ async function fetchAllFilesByGroupId(groupId: any) {
     }
 }
 
+async function fetchAllMessagesByRoom(roomName: string) {
+    const messages = await Message.find({ room: roomName }).exec();
+    return messages;
+}
+
+async function deleteAllMessagesByRoom(roomName: string) {
+    const result = await Message.deleteMany({ room: roomName }).exec();
+    return result;
+}
+
 export const messageService = {
     createNewMessage,
     getAllMessages,
@@ -127,5 +137,7 @@ export const messageService = {
     updateMessage,
     fetchAllChatMessages,
     fetchAllFilesByChatId,
-    fetchAllFilesByGroupId
+    fetchAllFilesByGroupId,
+    fetchAllMessagesByRoom,
+    deleteAllMessagesByRoom
 };

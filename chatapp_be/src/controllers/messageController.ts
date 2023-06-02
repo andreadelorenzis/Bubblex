@@ -80,6 +80,28 @@ const fetchAllFilesByGroupId = async (req: Request, res: Response, next: NextFun
     }
 }
 
+const fetchAllMessagesByRoom = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const roomName = req.params.roomname;
+        const messages = await messageService.fetchAllMessagesByRoom(roomName);
+        res.json(messages);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+}
+
+const deleteAllMessagesByRoom = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const roomName = req.params.roomname;
+        const result = await messageService.deleteAllMessagesByRoom(roomName);
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+}
+
 export const messageController = {
     getAllMessages,
     createNewMessage,
@@ -87,7 +109,9 @@ export const messageController = {
     updateMessageById,
     fetchAllChatMessages,
     fetchAllFilesByChatId,
-    fetchAllFilesByGroupId
+    fetchAllFilesByGroupId,
+    fetchAllMessagesByRoom,
+    deleteAllMessagesByRoom
 };
 
 export { };

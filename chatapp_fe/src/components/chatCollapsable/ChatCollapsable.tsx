@@ -18,32 +18,11 @@ import CodeMessage from '../codeMessage/CodeMessage'
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios'
 import { getApiUrl } from '../../utils/appUtils'
+import ErrorAlert from '../errorAlert/ErrorAlert'
 
-/*
-
-    pollMessages: [
-        {
-            _id,
-            question
-            options: [
-                {
-                    id,
-                    text,
-                    votes: {
-                        name,
-                        id
-                    }
-                }
-            ]
-        }
-    ]
-
- */
-
-export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, users, myUser }: any) {
+export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, users, myUser, userColors }: any) {
     const [messages, setMessages] = useState<any[]>([]);
     const [messageText, setMessageText] = useState<any>("")
-    const [userColors, setUsersColors] = useState<any>({});
     const [emojiMenuOpened, setEmojiMenuOpened] = useState<boolean>(false);
     const [messageOptionsOpened, setMessageOptionsOpened] = useState<boolean>(false);
     const [isPollModalOpen, setIsPollModalOpen] = useState<boolean>(false);
@@ -59,6 +38,8 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
         size: ''
     });
     const [isCodeModalOpen, setIsCodeModalOpen] = useState<boolean>(false);
+    const [messagesFetched, setMessagesFetched] = useState<boolean>(false);
+    const [error, setError] = useState<string>("");
 
     const emojiPickerRef = useRef<any>(null);
     const optionsPickerRef = useRef<any>(null);
@@ -77,6 +58,8 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
         }
 
         function onReceiveMessage(message: any) {
+            console.log("Dentro ")
+            console.log("Received message", message)
             setMessages((prevMessages: any[]) => [...prevMessages, message]);
         }
 
@@ -85,6 +68,19 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
         socket.on('receiveTextMessage', onReceiveMessage);
 
         /* socket.emit("joinRoom", roomID); */
+
+        const fetchMessagesByRoom = async () => {
+            try {
+                const response: any = await axios.get(`${getApiUrl()}/api/v1/messages/room/${roomID}`);
+                setMessages(response.data);
+                setNewMessagesNotSeen(response.data.length);
+            } catch (error) {
+                setError("Unable to fetch the messages");
+                console.error(error);
+            }
+        }
+        setMessagesFetched(true);
+        fetchMessagesByRoom();
 
         return () => {
             socket.off('connect', onConnect);
@@ -123,22 +119,19 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
             setMessages(updatedMessages);
         }
 
-        socket.on('updatePollMessage', onUpdatePollMessage)
+        socket.on('updatePollMessage', onUpdatePollMessage);
     }, [messages])
 
     useEffect(() => {
-        // Set the color for the usernames
-        const assignedColors = assignRandomColors(users);
-        setUsersColors(assignedColors);
-
         // Listener to check if I'm scrolled all the way to the bottom
         const container = messageContainerRef.current;
         const readNewMessagesNotSeen = () => {
+            console.log("isNearBottom: ", isNearBottom())
             if (!collapse && isNearBottom()) {
                 setNewMessagesNotSeen(0);
             }
         }
-        if (container.current) {
+        if (container) {
             container.addEventListener('scroll', readNewMessagesNotSeen);
         }
 
@@ -148,23 +141,22 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
     }, [users]);
 
     useEffect(() => {
+
+    }, [users]);
+
+    useEffect(() => {
         if (isFirstRender.current) {
-            // Skip the first render
             isFirstRender.current = false;
             return;
         }
 
-        if (collapse) {
-            // set the new message alert on the chat button
-            setNewMessagesNotSeen((prevMessagesNotSeen: number) => prevMessagesNotSeen + 1);
-        } else {
-            const lastMessage = messages[messages.length - 1];
-            if (lastMessage?.user?.id === myUser?.id) {
-                // I sent the last message. Scroll to the bottom
-                handleScrollBottom();
+        if (messagesFetched && messages.length > 0) {
+            if (collapse) {
+                // set the new message alert on the chat button
+                setNewMessagesNotSeen((prevMessagesNotSeen: number) => prevMessagesNotSeen + 1);
             } else {
-                // set the new messages tooltip inside the chat
-                if (!isNearBottom) {
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage?.user?.id !== myUser?.id && !isNearBottom()) {
                     setNewMessagesNotSeen((prevMessagesNotSeen: number) => prevMessagesNotSeen + 1);
                 }
             }
@@ -190,29 +182,12 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
         };
     }, [emojiMenuOpened, messageOptionsOpened]);
 
-    const assignRandomColors = (users: any[]) => {
-        const colors = ['#ed4245', '#5865f2', '#faa61a', '#757e8a', '#3ba55c', '#b24ea1']; // List of available colors
-        const assignedColors: any = {};
-
-        users.forEach((user) => {
-            // Generate a random index within the available colors array
-            const randomIndex = Math.floor(Math.random() * colors.length);
-
-            // Assign the color to the user
-            assignedColors[user.id] = colors[randomIndex];
-
-            // Remove the assigned color from the available colors array to avoid repetition
-            colors.splice(randomIndex, 1);
-        });
-
-        return assignedColors;
-    }
-
     const handleScrollBottom = () => {
         const msgContainer: any = document.getElementById('msg-container');
         if (!!msgContainer) {
             msgContainer.scrollTop = msgContainer?.scrollHeight;
         }
+        setNewMessagesNotSeen(0);
     }
 
     const isNearBottom = (): boolean => {
@@ -222,17 +197,15 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
         const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
 
         // Define a threshold value (e.g., 20 pixels) for considering it near the bottom
-        const threshold = 20;
+        const threshold = 100;
 
         // Check if the distance from the bottom is within the threshold
         const isNearBottom = distanceFromBottom < threshold;
 
-        // Show the alert if not near the bottom
-        if (!isNearBottom) {
-            alert('New message!');
-        }
+        // Check if the container is scrolled
+        const isScrolled = container.scrollHeight > container.clientHeight;
 
-        return isNearBottom;
+        return isNearBottom || !isScrolled;
     }
 
     const togglePollModalOpen = () => {
@@ -246,6 +219,7 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
     const handleCollapseClick = () => {
         if (collapse) {
             setNewMessagesNotSeen(0);
+            handleScrollBottom();
         }
         onCollapse();
     }
@@ -266,8 +240,20 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
         setEmojiMenuOpened(false);
     };
 
+    const handleKeyDown = (e: any) => {
+        const code = (e.keyCode ? e.keyCode : e.which);
+        if (code === 13 && e.shiftKey) { //Enter keycode
+            /* e.preventDefault();
+            setMessageText((prevMessage: any) => prevMessage); */
+        } else if (code === 13) {
+            sendMessage('text');
+        }
+    }
+
     const handleChange = (e: any) => {
-        setMessageText(e.target.value);
+        const value: string = e.target.value;
+        if (value !== '\n')
+            setMessageText(value);
     }
 
     const handleFileUploadClick = () => {
@@ -312,11 +298,13 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
     const sendMessage = async (messageType?: string, messageData?: any) => {
         const message: any = {
             sender: myUser,
+            room: roomID,
             contentType: messageType,
             textContent: messageText,
             _id: uuidv4()
         }
         if (!!chosenFile) {
+            handleScrollBottom();
             const fileData = await uploadFileToApi();
             message.contentType = 'file';
             message.fileUrl = fileData.fileUrl;
@@ -330,6 +318,9 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
             message.language = messageData.language;
         } else {
             // normal message
+            if (messageText.trim() === "") {
+                return;
+            }
         }
 
         // send message via SOCKET and update state
@@ -342,11 +333,14 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
         socket.emit('sendTextMessage', data);
         setMessages((prevMessages: any) => [...prevMessages, message]);
         setMessageText("");
+        setNewMessagesNotSeen(0);
+        handleScrollBottom();
 
         // POST message to api
         try {
-            await axios.post(getApiUrl() + "/api/v1/messages/", message);
-        } catch (error) {
+            await axios.post(`${getApiUrl()}/api/v1/messages`, message);
+        } catch (error: any) {
+            setError(error);
             console.error(error);
         }
     }
@@ -396,7 +390,8 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
             });
             console.log("FILE UPLOAD RESPONSE ", response)
             return response.data;
-        } catch (error) {
+        } catch (error: any) {
+            setError(error);
             throw error;
         }
     }
@@ -505,7 +500,7 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
                     </ul>
                     <div className='triangle'></div>
                 </span>}
-                <textarea placeholder='Send a message..' rows={1} onChange={handleChange} value={messageText} />
+                <textarea placeholder='Send a message..' rows={1} onKeyDown={handleKeyDown} onChange={handleChange} value={messageText} />
                 <button
                     onClick={toggleEmojiMenu}
                     className={`chat-collapse__input-bar__emoji-button chat-collapse__input-bar__button ${emojiMenuOpened ? 'chat-collapse__input-bar__button--active' : ''}`}>
@@ -535,6 +530,7 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
                     onClose={togglePollModalOpen}
                 />
             )}
+            {!!error && <ErrorAlert message={error} onClose={() => { setError("") }} />}
         </div>
     )
 }

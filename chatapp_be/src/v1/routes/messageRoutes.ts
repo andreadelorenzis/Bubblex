@@ -10,6 +10,10 @@ router.get('/chat/files/:id', messageController.fetchAllFilesByChatId);
 
 router.get('/group/files/:id', messageController.fetchAllFilesByGroupId);
 
+router.get('/room/:roomname', messageController.fetchAllMessagesByRoom);
+
+router.delete('/room/:roomname', messageController.deleteAllMessagesByRoom);
+
 router.get('/', messageController.getAllMessages);
 
 router.post('/', messageController.createNewMessage);

@@ -5,7 +5,7 @@ import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 export default function Message({ message, userColor }: any) {
     const sender = message.sender;
-    const content = message.content;
+    const content = message.textContent;
 
     return (
         <div className="message">
@@ -17,7 +17,7 @@ export default function Message({ message, userColor }: any) {
                 </div>}
             <div>
                 <p className='message__name' style={{ fontWeight: 'bold', color: userColor }}>{sender.name}</p>
-                <p className='message__content'>{content}</p>
+                <pre className='message__content'>{content}</pre>
             </div>
         </div>
     );
