@@ -24,12 +24,10 @@
 
 .videocall__container--big {
     max-width: 1335px;
-    margin-top: 70px;
 }
 
 .videocall__container--massive {
     max-width: 745px;
-    margin-top: 50px;
 }
 
 .videocall__title {
@@ -169,8 +167,17 @@
 }
 
 .videocall__videos__not-pinned--row .videocall__videos__user-card {
-    max-width: 250px;
+    max-width: 200px;
     margin: 0 10px;
+}
+
+.videocall__videos__not-pinned--row .videocall__videos__user-card__placeholder__icon {
+    width: 60px;
+    height: 60px;
+}
+
+.videocall__videos__not-pinned--row .icon {
+    font-size: 30px;
 }
 
 .videocall__videos__user-card--more:first-child,
@@ -180,7 +187,7 @@
 }
 
 .videocall__videos__pinned .videocall__videos__user-card {
-    max-width: 590px;
+    max-width: 650px;
 }
 
 .videocall__container--massive .videocall__videos__user-card {

@@ -305,11 +305,8 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
         }
         if (!!chosenFile) {
             handleScrollBottom();
-            const fileData = await uploadFileToApi();
-            message.contentType = 'file';
-            message.fileUrl = fileData.fileUrl;
-            message.fileMetadata = fileData.fileMetadata;
-            setChosenFile(null);
+            await uploadFileToApi(message);
+            return;
         } else if (messageType === 'poll') {
             message.question = messageData?.question;
             message.options = messageData?.options;
@@ -328,9 +325,9 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
             message: message,
             room: roomID
         }
+        socket.emit('sendTextMessage', data);
 
         // Update state
-        socket.emit('sendTextMessage', data);
         setMessages((prevMessages: any) => [...prevMessages, message]);
         setMessageText("");
         setNewMessagesNotSeen(0);
@@ -371,7 +368,7 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
         socket.emit('votePollOption', data);
     }
 
-    const uploadFileToApi = async () => {
+    const uploadFileToApi = async (message: any) => {
         const formData = new FormData();
         formData.append("contentType", 'file');
         formData.append("textContent", messageText);
@@ -388,8 +385,23 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
                     "Content-Type": "multipart/form-data",
                 },
             });
-            console.log("FILE UPLOAD RESPONSE ", response)
-            return response.data;
+            const fileData: any = response.data;
+            message.contentType = 'file';
+            message.fileMetadata = fileMetadata;
+            message.fileUrl = fileData.fileUrl;
+            setChosenFile(null);
+
+            // send message via SOCKET and update state
+            const data = {
+                message: message,
+                room: roomID
+            }
+            socket.emit('sendTextMessage', data);
+
+            // Update state
+            setMessages((prevMessages: any) => [...prevMessages, message]);
+            setMessageText("");
+            setNewMessagesNotSeen(0);
         } catch (error: any) {
             setError(error);
             throw error;

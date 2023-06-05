@@ -1,11 +1,7 @@
 import { socket } from './socket';
 import './App.css';
 import React, { useState, useEffect } from 'react';
-import Room from './components/VideoRoom';
-import CreateRoom from './components/CreateRoom';
 import { BrowserRouter, Route, createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Chat from './components/Chat';
-import Messenger from './pages/messenger/Messenger';
 import Videocall from './pages/videocall/Videocall';
 import LandingPage from './pages/landingPage/LandingPage';
 import RoomInviter from './pages/roomInviter/RoomInviter';

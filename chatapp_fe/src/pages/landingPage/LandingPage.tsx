@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHand, faHandPeace } from '@fortawesome/free-solid-svg-icons'
 import RoomCreator from '../../components/roomCreator/RoomCreator';
 import Modal from '../../components/modal/Modal';
+import logo from "../../images/logo.png";
 
 export default function LandingPage({ socket, onSubmit }: any) {
     const [isRoomModalOpen, setIsRoomModalOpen] = useState<boolean>(false);
@@ -34,7 +35,10 @@ export default function LandingPage({ socket, onSubmit }: any) {
     return (
         <div className='landing'>
             <div className="landing__nav">
-                <h1 className="landing__nav__logo">ChatApp</h1>
+                <div className="landing__nav__logo">
+                    <img src={logo} />
+                    <h1>Bubblex</h1>
+                </div>
                 <button onClick={toggleRoomCreatorModal} className="landing__nav__button">Create room</button>
             </div>
             <div className="landing__content">

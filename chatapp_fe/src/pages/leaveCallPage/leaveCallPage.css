@@ -7,9 +7,22 @@
     color: #fff;
 }
 
-.leave__title {
-    font-size: 60px;
+.leave__logo {
+    display: flex;
+    align-items: center;
     margin-bottom: 20px;
+}
+
+.leave__logo>h1 {
+    color: #ebe0e0;
+    margin-right: auto;
+    font-size: 60px;
+}
+
+.leave__logo>img {
+    width: 80px;
+    height: 80px;
+    margin-right: 8px;
 }
 
 .leave__subtitle {

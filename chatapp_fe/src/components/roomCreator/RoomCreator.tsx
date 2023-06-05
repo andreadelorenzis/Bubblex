@@ -62,7 +62,7 @@ export default function RoomCreator({ onSubmit, onClose }: any) {
                 footer={(
                     <button className="room-creator__submit-btn" onClick={handleSubmit}>Create room</button>
                 )}
-                onClose={onclose}
+                onClose={onClose}
             />
         </>
     )

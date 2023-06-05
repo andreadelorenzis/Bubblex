@@ -5,7 +5,7 @@
 }
 
 .file-message__container {
-    padding: 15px;
+    padding: 25px 15px;
     align-items: center;
     color: #d6d9dc;
     background-color: #3b3f41;
@@ -19,8 +19,13 @@
     margin-left: 20px;
 }
 
+.file-message__type-size {
+    font-size: 15px;
+}
+
 .file-message__name {
     font-weight: bold;
+    font-size: 14px;
 }
 
 .file-message__upload {
