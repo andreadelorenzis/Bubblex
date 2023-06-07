@@ -1018,9 +1018,20 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
         }
     }
 
+    let videocallClass: any = "videocall ";
+    if (users.length === 1) {
+        videocallClass += ' videocall--1 ';
+    } else if (users.length === 2) {
+        videocallClass += ' videocall--2 ';
+    } else if (users.length === 3) {
+        videocallClass += ' videocall--3 ';
+    } else if (users.length === 4) {
+        videocallClass += ' videocall--4 ';
+    }
+
     return (
-        <div className='videocall'>
-            <h3 className='videocall__title'>{roomID}</h3>
+        <div className={videocallClass}>
+            <h3 className={showControls ? 'videocall__title' : 'videocall__title videocall--hide'}>{roomID}</h3>
             <div className={`videocall__container ${!collapse ? 'videocall__container--chat-active' : ''}
                                                   ${users.length == 2 ? 'videocall__container--big' : ''}
                                                   ${users.length <= 1 ? 'videocall__container--massive' : ''}`}>

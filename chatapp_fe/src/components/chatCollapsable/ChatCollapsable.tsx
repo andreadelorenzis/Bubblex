@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import "./chatCollapsable.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faMessage, faPlusCircle, faPlus, faUser, faUpload, faCode, faPoll } from '@fortawesome/free-solid-svg-icons'
+import { faMessage, faPlusCircle, faPlus, faUser, faUpload, faCode, faPoll, faClose } from '@fortawesome/free-solid-svg-icons'
 import { faFaceSmile, faPaperPlane } from '@fortawesome/free-regular-svg-icons';
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
@@ -413,6 +413,9 @@ export default function ChatCollapsable({ collapse, onCollapse, socket, roomID, 
             <button className='chat-collapse__button' onClick={handleCollapseClick}>
                 <FontAwesomeIcon icon={faMessage} color='#d6d9dc' />
                 {collapse && newMessagesNotSeen > 0 ? <span>{newMessagesNotSeen}</span> : <></>}
+            </button>
+            <button className='chat-collapse__close' onClick={handleCollapseClick}>
+                <FontAwesomeIcon icon={faClose} color='#d6d9dc' style={{ fontSize: '25px' }} />
             </button>
             <div
                 id='msg-container'

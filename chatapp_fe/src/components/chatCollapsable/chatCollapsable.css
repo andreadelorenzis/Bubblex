@@ -11,6 +11,7 @@
     transition: all 0.3s ease;
     border: 1px solid black;
     background-color: #25262c;
+    z-index: 2;
 }
 
 .chat-collapse--collapsed {
@@ -213,4 +214,35 @@
     transform: rotate(180deg) scale(0.2);
     bottom: -43px;
     left: -20px;
+}
+
+.chat-collapse__close {
+    position: absolute;
+    top: 17px;
+    right: 20px;
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .chat-collapse {
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .chat-collapse__input-bar {
+        width: 100%;
+    }
+
+    .chat-collapse--collapsed {
+        right: -100%;
+    }
+
+    .chat-collapse--collapsed .chat-collapse__input-bar {
+        right: -100%;
+    }
+
+    .chat-collapse__close {
+        display: block;
+    }
 }

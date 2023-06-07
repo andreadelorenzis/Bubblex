@@ -1,7 +1,8 @@
 .room-inviter {
     color: #d6d9dc;
     background-color: #262625;
-    height: 90vh;
+    height: 100vh;
+    width: 100%;
 }
 
 .room-inviter__nav {
@@ -9,8 +10,8 @@
     top: 0;
     right: 0;
     left: 0;
-    height: 80px;
-    padding: 0 90px;
+    height: 70px;
+    padding: 10px 90px;
     background-color: #1a1a1a;
     display: flex;
     align-items: center;
@@ -20,12 +21,23 @@
     cursor: pointer;
 }
 
+.landing__nav__logo>h1 {
+    font-size: 30px;
+}
+
+.landing__nav__logo>img {
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+}
+
 .room-inviter__body {
     display: flex;
+    flex-direction: row;
     align-items: center;
-    margin-top: 50px;
     height: 100%;
     padding: 0 90px;
+    background-color: #262625;
 }
 
 .room-inviter__body-left {
@@ -34,7 +46,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex: 1.2;
+    flex: 1;
 }
 
 
@@ -42,6 +54,7 @@
     display: flex;
     flex-direction: column;
     justify-content: start;
+    align-items: center;
     flex: 1;
     margin-left: 40px;
 }
@@ -108,12 +121,18 @@
 
 .room-inviter__submit-btn {
     background-color: #1c9dea;
-    width: 300px;
+    width: 100%;
+    max-width: 500px;
     height: 50px;
     margin-top: 20px;
     border-radius: 8px;
     color: #fff;
     font-weight: bold;
+}
+
+.room-inviter__form-control {
+    width: 100%;
+    max-width: 500px;
 }
 
 .room-inviter__body-left__video-card>.video {
@@ -151,3 +170,97 @@
     height: 100%;
     object-fit: cover;
 } */
+
+@media (max-width: 1000px) {}
+
+@media (max-width: 900px) {
+    .room-inviter {
+        flex-direction: column;
+        justify-content: start;
+    }
+
+    .room-inviter__nav {
+        position: relative;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+    }
+
+    .room-inviter__body {
+        padding: 20px;
+        flex-direction: column;
+        justify-content: start;
+    }
+
+    .room-inviter__body-left {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        justify-content: start;
+        margin: 0 auto;
+        margin-top: 10px;
+        flex: 0;
+    }
+
+    .room-inviter__body-left__video-controls {
+        position: relative;
+        padding: 0;
+        margin: 0;
+        bottom: 0;
+    }
+
+    .room-inviter__body-left__video-controls>button {
+        margin: 0 10px;
+    }
+
+    .room-inviter__body-left__video-card {
+        width: 100%;
+        max-width: 450px;
+        margin-bottom: 10px;
+        flex: 0;
+    }
+
+    .room-inviter__body-right {
+        justify-content: start;
+        padding-top: 20px;
+        margin: 0 auto;
+        width: 100%;
+        align-items: center;
+        flex: 0;
+    }
+
+    .room-inviter__body-right>h2 {
+        margin-top: 0;
+        font-weight: 900;
+        font-size: 22px;
+    }
+
+    .room-inviter__body-right>h3 {
+        margin-top: 0;
+        font-weight: 600;
+        font-size: 20px;
+    }
+
+    .room-inviter__submit-btn {
+        background-color: #1c9dea;
+        width: 100%;
+        max-width: 450px;
+        height: 50px;
+        margin-top: 10px;
+        border-radius: 8px;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .room-inviter__form-control {
+        width: 100%;
+        max-width: 450px;
+    }
+
+    .landing__nav__logo {
+        padding: 0 0;
+        cursor: pointer;
+    }
+}
+
+@media (max-width: 600px) {}

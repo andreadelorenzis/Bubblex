@@ -68,10 +68,19 @@ button {
   border: none;
 }
 
+html {
+  height: 100vh;
+}
+
 body,
 html,
 * {
   box-sizing: border-box;
+}
+
+body {
+  height: 100vh;
+  margin: 0;
 }
 
 body {

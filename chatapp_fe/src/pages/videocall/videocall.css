@@ -3,46 +3,46 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
+    width: 100%;
 }
 
 .videocall__container {
-    position: absolute;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 80%;
-    max-width: 935px;
-    margin-top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    justify-content: center;
     transition: all 0.3s ease;
+    padding: 0 20px;
+    margin: 0 auto;
+    min-height: 100vh;
 }
 
 .videocall__container--chat-active {
     left: calc(50% - 200px);
 }
 
-.videocall__container--big {
-    max-width: 1335px;
-}
-
-.videocall__container--massive {
-    max-width: 745px;
-}
-
 .videocall__title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
     margin: 20px 30px;
     margin-bottom: 0;
     color: #fff;
     font-weight: 400;
     font-size: 23px;
+    transition: all 0.5s ease;
 }
 
 .videocall__videos {
     /* Adjust the maximum width of the container as needed */
-    position: relative;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
     width: 100%;
     margin-bottom: 20px;
+    margin-top: 20px;
 }
 
 .videocall__videos__pinned {
@@ -55,7 +55,10 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     /* Two equal columns */
-    grid-gap: 10px;
+    row-gap: 10px;
+    column-gap: 20px;
+    margin: 0 auto;
+    width: 100%;
     /* Adjust the gap between rectangles as needed */
 }
 
@@ -64,13 +67,63 @@
     justify-content: center;
 }
 
-.videocall__container--massive .videocall__videos__not-pinned--grid {
+.videocall--1 .videocall__videos__not-pinned--grid,
+.videocall--1 .videocall__videos__pinned {
     display: flex;
     justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.videocall--1 .videocall__videos__user-card {
+    max-width: 1000px;
+    width: 100%;
+}
+
+.videocall--2 .videocall__videos__user-card {
+    max-width: 800px;
+}
+
+.videocall--3 .videocall__videos {
+    margin-top: 5px;
+}
+
+.videocall--3 .videocall__videos__not-pinned--grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    justify-content: center;
+    align-content: center;
+    place-items: center;
+    justify-items: center;
+    max-width: 1150px;
+}
+
+.videocall--3 .videocall__videos__user-card {
+    width: 100%;
+    justify-self: center;
+    align-self: center;
+}
+
+.videocall--3 .videocall__videos__user-card:last-child {
+    width: 50%;
+    grid-row: 3;
+    grid-column: 1 / -1;
+    /* Span across all columns */
+    justify-self: center;
+    align-self: center;
+}
+
+.videocall--3 .videocall__videos__pinned .videocall__videos__user-card:last-child {
+    width: 100%;
+}
+
+.videocall--4 .videocall__videos__user-card {
+    max-width: 460px;
 }
 
 .videocall__videos__user-card__video__container {
-    position: relative;
     width: 100%;
     height: 100%;
 }
@@ -107,6 +160,7 @@
     aspect-ratio: 16/9;
     transition: all 0.3s ease;
     flex: 1;
+    width: 100%;
 }
 
 .videocall__videos__user-card__menu {
@@ -186,14 +240,6 @@
     /* Remove margin from first and last elements */
 }
 
-.videocall__videos__pinned .videocall__videos__user-card {
-    max-width: 650px;
-}
-
-.videocall__container--massive .videocall__videos__user-card {
-    max-width: none;
-}
-
 .videocall__container--massive .videocall__videos__pinned {
     margin-bottom: 0;
 }
@@ -217,7 +263,8 @@
     transition: all 0.5s ease;
 }
 
-.videocall--hide {
+.videocall--hide,
+.title--hide {
     opacity: 0;
 }
 
@@ -228,6 +275,8 @@
     transform: translateX(-50%); */
     transition: all 0.5s ease;
     margin-top: 20px;
+    position: fixed;
+    bottom: 80px;
 }
 
 .videocall__buttons>button>.icon {
@@ -320,4 +369,209 @@
 
 .videocall__videos__user-card__video--not-active {
     background-color: black;
+}
+
+.videocall__videos__pinned .videocall__videos__user-card {
+    max-width: 900px;
+}
+
+@media (max-width: 1100px) {
+    .videocall--2 .videocall__videos__not-pinned--grid {
+        display: grid;
+    }
+}
+
+@media (max-width: 900px) {
+
+    .videocall__videos__not-pinned--grid,
+    .videocall__videos__pinned {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 auto;
+        flex-wrap: wrap;
+    }
+
+    .videocall__videos__not-pinned--row {
+        display: flex;
+        margin-top: 15px;
+    }
+
+    .videocall__container {
+        padding: 20px;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .videocall--1 .videocall__videos__not-pinned--grid {
+        margin-bottom: 100px;
+    }
+
+    .videocall--1 .videocall__videos__pinned {
+        margin-bottom: 50px;
+    }
+
+    .videocall--2 .videocall__videos {
+        margin-top: 20px;
+    }
+
+    .videocall--2 .videocall__videos__not-pinned--grid {
+        display: flex;
+    }
+
+    .videocall--2 .videocall__videos__pinned {
+        width: 100%;
+    }
+
+    .videocall--2 .videocall__videos__user-card {
+        max-width: 500px;
+    }
+
+    .videocall--3 .videocall__videos__not-pinned--grid {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+    }
+
+    .videocall--3 .videocall__videos__user-card {
+        width: 100%;
+        max-width: 400px;
+        justify-self: center;
+        align-self: center;
+    }
+
+    .videocall--3 .videocall__videos__user-card:last-child {
+        width: 50%;
+        grid-row: 3;
+        grid-column: 1 / -1;
+        /* Span across all columns */
+        justify-self: center;
+        align-self: center;
+    }
+
+    .videocall--3 .videocall__videos__pinned .videocall__videos__user-card:last-child {
+        width: 100%;
+    }
+
+    .videocall .videocall__videos__pinned .videocall__videos__user-card {
+        max-width: 100%;
+    }
+
+    .videocall--4 .videocall__videos__not-pinned--grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 10px;
+
+    }
+
+    .videocall--4 .videocall__videos {
+        margin-top: 10px;
+    }
+
+    .videocall--4 .videocall__videos__user-card {
+        max-width: 560px;
+    }
+
+    .videocall__videos__not-pinned--row .videocall__videos__user-card {
+        max-width: 250px;
+    }
+
+    .videocall__videos__not-pinned--row .videocall__videos__user-card {
+        display: flex;
+        margin-top: 5px;
+    }
+
+    .videocall__videos__pinned .videocall__videos__user-card {
+        max-width: 100%;
+    }
+
+}
+
+@media (max-width: 600px) {
+    .videocall__videos__user-card__placeholder__icon {
+        width: 70px;
+        height: 70px;
+    }
+
+    .videocall__videos__not-pinned--grid .icon,
+    .videocall__videos__pinned .icon,
+    .videocall__videos__not-pinned--row .icon {
+        font-size: 25px;
+    }
+
+    .videocall--2 .videocall__videos {
+        margin-top: 30px;
+    }
+
+
+    .videocall--3 .videocall__videos__not-pinned--grid {
+        display: flex;
+    }
+
+    .videocall--3 .videocall__videos__user-card {
+        width: 100%;
+    }
+
+    .videocall--3 .videocall__videos__user-card:last-child {
+        width: 100%;
+    }
+
+    .videocall--3 .videocall__videos__user-card {
+        max-width: 350px;
+    }
+
+    .videocall--3 .videocall__videos__pinned .videocall__videos__user-card {
+        max-width: 100%;
+    }
+
+    .videocall--4 .videocall__videos__not-pinned--grid {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 auto;
+    }
+
+    .videocall--4 .videocall__videos {
+        margin-top: 0;
+    }
+
+    .videocall--4 .videocall__videos__user-card {
+        max-width: 250px;
+    }
+
+    .videocall--4 .videocall__videos__not-pinned--row {}
+
+    .videocall--4 .videocall__videos__pinned .videocall__videos__user-card {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .videocall--4 .videocall__videos__not-pinned--row {
+        /* width: 100%; */
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        justify-content: center;
+        align-content: center;
+        place-items: center;
+        justify-items: center;
+        column-gap: 10px;
+    }
+
+    .videocall--4 .videocall__videos__not-pinned--row .videocall__videos__user-card {
+        /* width: 100%; */
+        max-width: 500px;
+        justify-self: center;
+        align-self: center;
+    }
+
+    .videocall--4 .videocall__videos__not-pinned--row .videocall__videos__user-card:last-child {
+        width: 50%;
+        grid-row: 3;
+        grid-column: 1 / -1;
+        /* Span across all columns */
+        justify-self: center;
+        align-self: center;
+        margin-top: 10px;
+    }
+
 }

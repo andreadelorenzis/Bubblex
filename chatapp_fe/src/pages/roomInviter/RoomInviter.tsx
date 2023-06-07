@@ -4,6 +4,7 @@ import "./roomInviter.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faVideoCamera, faVideoSlash, faMicrophone, faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons'
 import ErrorAlert from '../../components/errorAlert/ErrorAlert'
+import logo from '../../images/logo.png'
 
 export default function RoomInviter({ socket, onSubmit, microphoneActive, videoActive, setVideoActive, setMicrophoneActive }: any) {
     const [username, setUsername] = useState<string>("");
@@ -122,7 +123,10 @@ export default function RoomInviter({ socket, onSubmit, microphoneActive, videoA
     return (
         <div className='room-inviter'>
             <div className="room-inviter__nav">
-                <h1 className="landing__nav__logo" onClick={handleClickLogo}>ChatApp</h1>
+                <div className="landing__nav__logo" onClick={handleClickLogo}>
+                    <img src={logo} />
+                    <h1>Bubblex</h1>
+                </div>
             </div>
             <div className="room-inviter__body">
                 <div className="room-inviter__body-left">
@@ -154,7 +158,7 @@ export default function RoomInviter({ socket, onSubmit, microphoneActive, videoA
                 <div className="room-inviter__body-right">
                     <h3>You're about to join the videocall</h3>
                     <h2>{roomname}</h2>
-                    <div className="room-creatore__form-control">
+                    <div className="room-inviter__form-control">
                         <label htmlFor="username" style={{ marginTop: '10px' }}>Your username:</label>
                         <input name="username" type="text" id="username" value={username} onChange={handleChange} />
                     </div>
