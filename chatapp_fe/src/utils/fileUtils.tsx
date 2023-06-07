@@ -3,7 +3,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileImage, faFileVideo, faFileAudio, faFilePdf, faFileWord, faFileExcel, faFilePowerpoint, faFileAlt, faFileArchive, faFileCode } from '@fortawesome/free-solid-svg-icons';
 import React from 'react';
 
-export const getTypeName = (fileType: any) => {
+/**
+ * Returns a shortened name based on the type of the file
+ * 
+ * @param fileType 
+ * @returns name
+ */
+export const getTypeName = (fileType: any): string => {
     let name = '';
 
     switch (fileType) {
@@ -111,6 +117,14 @@ export const getTypeName = (fileType: any) => {
     return name;
 };
 
+/**
+ * Returns a specific icon based on the type of the file
+ * 
+ * @param fileType 
+ * @param size 
+ * @param color 
+ * @returns FontAwesomeIcon
+ */
 export const getIconByType = (fileType: any, size: any = '1x', color: any = '#333') => {
     const iconStyle = { fontSize: size, color };
 
@@ -164,7 +178,12 @@ export const getIconByType = (fileType: any, size: any = '1x', color: any = '#33
     }
 };
 
-
+/**
+ * Return a string representing the size of the file formatted (es. 5KB)
+ * 
+ * @param bytes 
+ * @returns file size formatted
+ */
 export const formatFileSize = (bytes: any) => {
     if (bytes === 0) return '0 B';
 

@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
 import "./landingPage.css"
 import banner from '../../images/banner.png';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHand, faHandPeace } from '@fortawesome/free-solid-svg-icons'
 import RoomCreator from '../../components/roomCreator/RoomCreator';
-import Modal from '../../components/modal/Modal';
 import logo from "../../images/logo.png";
 
 export default function LandingPage({ socket, onSubmit }: any) {
@@ -48,6 +45,7 @@ export default function LandingPage({ socket, onSubmit }: any) {
                 </div>
                 <div className="landing__content-right">
                     <img className='landing__content-right__banner' src={banner} alt="" />
+                    <button onClick={toggleRoomCreatorModal} className='landing__content-right__button'>Create room</button>
                 </div>
             </div>
             <div className="landing__footer"></div>

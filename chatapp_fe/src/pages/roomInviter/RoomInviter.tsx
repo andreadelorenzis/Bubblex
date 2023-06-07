@@ -5,10 +5,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faVideoCamera, faVideoSlash, faMicrophone, faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons'
 import ErrorAlert from '../../components/errorAlert/ErrorAlert'
 import logo from '../../images/logo.png'
+import { fireError } from '../../utils/appUtils'
 
 export default function RoomInviter({ socket, onSubmit, microphoneActive, videoActive, setVideoActive, setMicrophoneActive }: any) {
     const [username, setUsername] = useState<string>("");
-    const [error, setError] = useState<string>("");
 
     const userVideo = useRef<any>(null);
     const localStream: any = useRef();
@@ -113,7 +113,7 @@ export default function RoomInviter({ socket, onSubmit, microphoneActive, videoA
 
     const handleSubmit = () => {
         if (username.trim() === "") {
-            setError("Please, add a username before entering the videocall.");
+            fireError("Please, add a username before entering the videocall")
             return;
         }
         onSubmit();
@@ -165,7 +165,6 @@ export default function RoomInviter({ socket, onSubmit, microphoneActive, videoA
                     <button className="room-inviter__submit-btn" onClick={handleSubmit}>Join in</button>
                 </div>
             </div>
-            {!!error && <ErrorAlert message={error} onClose={() => { setError("") }} />}
         </div>
     )
 }

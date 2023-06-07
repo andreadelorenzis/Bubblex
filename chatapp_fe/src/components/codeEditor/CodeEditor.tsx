@@ -12,11 +12,11 @@ import "ace-builds/src-noconflict/mode-markdown";
 import "ace-builds/src-noconflict/theme-monokai";
 import Modal from '../modal/Modal';
 import ErrorAlert from '../errorAlert/ErrorAlert';
+import { fireError } from '../../utils/appUtils';
 
 export default function CodeEditor({ onSubmit, onClose }: any) {
     const [code, setCode] = useState<any>('');
     const [language, setLanguage] = useState<any>('java');
-    const [error, setError] = useState<string>("");
 
     const handleCodeChange = (newCode: any) => {
         setCode(newCode);
@@ -28,7 +28,7 @@ export default function CodeEditor({ onSubmit, onClose }: any) {
 
     const handleSubmit = () => {
         if (code.trim() === "") {
-            setError("Please, write at least a line of code");
+            fireError("Please, write at least a line of code")
             return;
         }
         onSubmit('code', { code, language });
@@ -72,7 +72,6 @@ export default function CodeEditor({ onSubmit, onClose }: any) {
                 )}
                 onClose={onClose}
             />
-            {!!error && <ErrorAlert message={error} onClose={() => { setError("") }} />}
         </>
     );
 }

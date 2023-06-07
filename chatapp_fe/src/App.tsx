@@ -5,6 +5,7 @@ import { BrowserRouter, Route, createBrowserRouter, RouterProvider } from 'react
 import Videocall from './pages/videocall/Videocall';
 import LandingPage from './pages/landingPage/LandingPage';
 import RoomInviter from './pages/roomInviter/RoomInviter';
+import ErrorAlert from './components/errorAlert/ErrorAlert';
 import LeaveCallPage from './pages/leaveCallPage/LeaveCallPage';
 
 function App() {
@@ -12,10 +13,6 @@ function App() {
   const [amInvited, setAmInvited] = useState<boolean>(false);
   const [videoActive, setVideoActive] = useState<boolean>(true);
   const [microphoneActive, setMicrophoneActive] = useState<boolean>(false);
-
-  useEffect(() => {
-
-  }, []);
 
   const handleCreateRoom = () => {
     setAmOwner(true);
@@ -59,19 +56,6 @@ function App() {
       path: "/leave/:roomname/:username",
       element: <LeaveCallPage socket={socket} />
     }
-    /* {
-      path: "/",
-      index: true,
-      element: <CreateRoom />,
-    },
-    {
-      path: "/room/:roomID",
-      element: <Room socket={socket} />,
-    }, */
-    /* {
-      path: "/",
-      element: <Chat socket={socket} />
-    } */
   ]);
 
   return (

@@ -8,172 +8,8 @@ import ChatCollapsable from '../../components/chatCollapsable/ChatCollapsable'
 import { v4 as uuidv4 } from 'uuid';
 import SimplePeer from "simple-peer";
 import ErrorAlert from '../../components/errorAlert/ErrorAlert'
-import { getApiUrl } from '../../utils/appUtils'
-
-/**
- * Considerazioni:
- * 1) Le informazioni sui peer vengono salvate in due array: il primo "remotePeerRefs" è un array di riferimenti
- * che viene usato per gestire la logica di connessione tra peer; il secondo "peers" è un array nello stato che 
- * viene usato per visualizzare gli elementi sullo schermo, come ad esempio i nomi dei vari utenti
- */
-
-const Video = ({ peerID, stream, addVideoRef, amOwner, socket }: any) => {
-    const [isMenuOpened, setIsMenuOpened] = useState<any>(false);
-    const [isMutedForMe, setIsMutedForMe] = useState<any>(false);
-    const [isMutedForAll, setIsMutedForAll] = useState<any>(false);
-    const [isCameraHiddenForAll, setIsCameraHiddenForAll] = useState<any>(false);
-
-    const [menuPosition, setMenuPosition] = useState<any>(null);
-    const [menuOrientation, setMenuOrientation] = useState<string>("above");
-
-    const ref: any = useRef<any>();
-    const menuRef: any = useRef<any>();
-
-    useEffect(() => {
-        addVideoRef(ref);
-    }, []);
-
-    useEffect(() => {
-        if (!!stream) {
-            ref.current.srcObject = stream;
-        }
-    }, [stream]);
-
-    useEffect(() => {
-        const handleOutsideClick = (e: any) => {
-            if (isMenuOpened && menuRef.current && !menuRef.current.contains(e.target)) {
-                setIsMenuOpened(false);
-            }
-        }
-
-        document.addEventListener('mousedown', handleOutsideClick);
-
-        return () => {
-            document.removeEventListener('mousedown', handleOutsideClick);
-        };
-    }, [isMenuOpened]);
-
-    const handleMenuClick = (e: any) => {
-        e.stopPropagation();
-
-        if (isMenuOpened) {
-            setIsMenuOpened(false);
-        } else {
-            setIsMenuOpened(true);
-
-            // set menu position
-            const button = e.target;
-            const buttonRect = button.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            const menuHeight: number = 400;
-            const menuWidth: number = 200;
-            let top: any = buttonRect.top;
-            let left: any = buttonRect.left;
-
-            // Check if the menu goes beyond the top edge
-            if (buttonRect.top - menuHeight < 0) {
-                top = buttonRect.bottom;
-                setMenuOrientation("below");
-            }
-
-            // Check if the menu goes beyond the right edge
-            if (buttonRect.left + menuWidth > viewportWidth) {
-                left = buttonRect.right - menuWidth;
-                setMenuOrientation("left");
-            }
-
-            // Check if the menu goes beyond the bottom edge
-            if (buttonRect.bottom + menuHeight > viewportHeight) {
-                top = buttonRect.top - menuHeight;
-                setMenuOrientation("above");
-            }
-
-        }
-    }
-
-    const toggleMuteForMe = (e: any) => {
-        e.stopPropagation();
-        setIsMutedForMe(!isMutedForMe);
-        setIsMenuOpened(false);
-    }
-
-    const toggleMuteForAll = (e: any) => {
-        e.stopPropagation();
-        if (isMutedForAll) {
-            setIsMutedForAll(false);
-            socket.emit('unmuteForAll', peerID);
-        } else {
-            setIsMutedForAll(true);
-            socket.emit('muteForAll', peerID);
-        }
-        setIsMenuOpened(false);
-    }
-
-    const toggleCameraForAll = (e: any) => {
-        e.stopPropagation();
-        if (isCameraHiddenForAll) {
-            setIsCameraHiddenForAll(false);
-            socket.emit('showCamForAll', peerID);
-        } else {
-            setIsCameraHiddenForAll(true);
-            socket.emit('hideCamForAll', peerID);
-        }
-        setIsMenuOpened(false);
-    }
-
-    let menuOrientationClass: string = "above";
-    switch (menuOrientation) {
-        case 'above':
-            menuOrientationClass = "videocall__videos__user-card__menu--above";
-            break;
-        case 'below':
-            menuOrientationClass = "videocall__videos__user-card__menu--below";
-            break;
-        case 'left':
-            menuOrientationClass = "videocall__videos__user-card__menu--left";
-            break;
-        default:
-            menuOrientationClass = "videocall__videos__user-card__menu--above";
-    }
-
-    return (
-        <div className='videocall__videos__user-card__video__container'>
-            <video className="videocall__videos__user-card__video" playsInline autoPlay ref={ref}></video>
-            {/* amOwner &&  */<button onClick={handleMenuClick} className={isMenuOpened ? 'videocall__videos__user-card__video__button--active' : ''}>
-                <FontAwesomeIcon icon={faEllipsisVertical} style={{ fontSize: '20px', color: '#d6d9dc' }} />
-            </button>}
-            {isMenuOpened && amOwner &&
-                <div
-                    className={'videocall__videos__user-card__menu ' + menuOrientationClass}
-                    ref={menuRef}>
-                    <ul>
-                        <li>
-                            <button onClick={toggleMuteForMe} title='Mute only for me'>
-                                <FontAwesomeIcon icon={isMutedForMe ? faVolumeHigh : faVolumeXmark} style={{ fontSize: '15px', color: '#d6d9dc', marginRight: '10px' }} />
-                                {isMutedForMe ? 'Unmute for me' : 'Unmute for all'}
-                            </button>
-                        </li>
-                        <li>
-                            <button onClick={toggleMuteForAll} title={isMutedForAll ? 'Enable microphone for all' : 'Mute microphone for everyone'}>
-                                <FontAwesomeIcon icon={isMutedForAll ? faVolumeHigh : faVolumeXmark} style={{ fontSize: '15px', color: '#d6d9dc', marginRight: '10px' }} />
-                                {isMutedForAll ? 'Unmute for all' : 'Mute for everyone'}
-                            </button>
-                        </li>
-                        <li>
-                            <button onClick={toggleCameraForAll} title={isCameraHiddenForAll ? 'Show camera for everyone' : 'Hide camera for everyone'}>
-                                <FontAwesomeIcon icon={isCameraHiddenForAll ? faVideoCamera : faVideoSlash} style={{ fontSize: '15px', color: '#d6d9dc', marginRight: '10px' }} />
-                                {isCameraHiddenForAll ? 'Show for everyone' : 'Hide for everyone'}
-                            </button>
-                        </li>
-                    </ul>
-                    <div className='triangle'></div>
-                </div>}
-            {!amOwner && <button onClick={toggleMuteForMe}><FontAwesomeIcon icon={isMutedForMe ? faVolumeXmark : faVolumeHigh} style={{ fontSize: '20px', color: '#d6d9dc' }} /></button>}
-
-        </div>
-    );
-}
+import { fireError, getApiUrl } from '../../utils/appUtils'
+import Video from '../../components/video/Video'
 
 export default function Videocall({ socket, amOwner, amInvited, initVideoValue, initMicValue }: any) {
     const [pinnedVideo, setPinnedVideo] = useState<any>(null);
@@ -191,20 +27,20 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     const [showPlaceholder, setShowPlaceholder] = useState<boolean>(false);
     const [isCameraInitialized, setIsCameraInitialized] = useState<boolean>(false);
     const [remoteUsersControls, setRemoteUsersControls] = useState<any>(null);
-
-    const [error, setError] = useState<string>("");
-
-    const localStream: any = useRef();
-    const userVideo: any = useRef();
-
     const [users, setUsers] = useState<any[]>([]);
     const [pinnedUser, setPinnedUser] = useState<any>(null);
     const [notPinnedUsers, setNotPinnedUsers] = useState<any[]>([]);
     const [peers, setPeers] = useState<any[]>([]);
     const [remoteStreams, setRemoteStreams] = useState<any[]>([]);
+
     const remoteVideoRefs: any = useRef([]);
     const remotePeerRefs: any = useRef([]);
+    const localStream: any = useRef();
+    const userVideo: any = useRef();
 
+    /**
+     * WebRTC STUN servers
+     */
     const iceServers: any = [
         {
             urls: "stun:stun.l.google.com:19302",
@@ -218,41 +54,45 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     ]
 
     const navigate = useNavigate();
-
     const { roomname, username }: any = useParams();
     const roomID: string = roomname;
-
     const MAX_USERS_NUM = 4;
-
     const videoConstraints = {
         height: window.innerHeight / 2,
         width: window.innerWidth / 2
     };
 
+    /**
+     * Assign the stream to the local video
+     */
     useEffect(() => {
         if (userVideo.current) {
             userVideo.current.srcObject = localStream.current;
         }
     }, [pinnedVideo, notPinnedUsers, users, isCameraInitialized]);
 
+    /**
+     * Called when a new user joins the videocall
+     */
     const handleUserJoined = useCallback((payload: any) => {
         const signal = payload.signal;
         const caller = payload.caller;
 
         setUsers((prevUsers: any[]) => {
-            console.log("Users before: ", prevUsers)
             const existingUser: any = prevUsers.find((user: any) => user.id === caller.id);
-            console.log("Existing user:", existingUser)
 
-            // Check if the user exists already. If it does, it means that this is a trickled signal
+            // Check if the user exists already. If it does, it means that this is a trickled offer
             if (!!existingUser) {
                 console.log("Trickle true. ICE candidate received and added")
                 const existingPeer: any = peers.find((peer: any) => peer.peerID === caller.id);
                 existingPeer?.signal(signal);
             } else {
+                // Add the new peer
                 console.log(caller.id + " joined the room with ID:");
                 const { peer, cleanup }: any = addPeer(signal, caller, localStream.current);
                 console.log("Added peer " + caller.id, peer);
+
+                // On 'stream' save the new stream and assign it to the video element of the new peer
                 peer.on('stream', (stream: any) => {
                     setRemoteStreams((prevStreams: any) => [...prevStreams, {
                         userID: caller.id,
@@ -265,6 +105,8 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                         }
                     }, 2000);
                 })
+
+                // Add the user to state
                 remotePeerRefs.current.push({
                     peerID: caller.id,
                     peer,
@@ -278,6 +120,9 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
         });
     }, []);
 
+    /**
+     * Called when the other peer accept the signal offers
+     */
     const handleReceivingReturnSignal = useCallback((payload: any) => {
         console.log("The user " + payload.id + " accepted my offer.");
         console.log("Now I signal back and complete the handshake with " + payload.id);
@@ -292,42 +137,54 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     }, []);
 
     useEffect(() => {
+        /**
+         * Initialize the camera/mic permissions and assign the local stream
+         */
         const initCamera = () => {
             navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then((stream: any) => {
+                // Assign the local stream
                 localStream.current = stream;
 
+                // Mute/unmute the mic
                 if (initMicValue === true) {
                     unmuteMic();
                 } else {
                     muteMic();
                 }
 
+                // Hide/Show the camera
                 if (initVideoValue === true) {
                     showCam();
                 } else {
                     hideCam();
                 }
 
+                // Emit the 'joinRoom' socket event
                 socket.emit("joinRoom", {
                     roomID: roomID,
                     username: username
                 });
 
+                // Set all the participants in the room
                 socket.once("allUsers", (data: any) => {
+                    // Set the users
                     const usersList: any[] = data.users;
                     const myUser: any = data.myUser;
                     setUsers(usersList);
                     setMyUser(myUser);
-                    // Creating all the users
-
                     const peersCopy: any[] = [];
-                    console.log("Now I send an offer to the other peers in the room.");
 
+                    // Create a new Peer for every other participant in the room
+                    console.log("Now I send an offer to the other peers in the room.");
                     const otherUsers: any[] = usersList.filter((user: any) => user.id !== myUser.id);
                     otherUsers.forEach((user: any) => {
+
+                        // Create the Peer object (this is the initiator of the connection)
                         const userID = user.id;
                         const { peer, cleanup }: any = createPeer(userID, myUser, stream);
                         console.log("Created peer " + userID, peer);
+
+                        // Assign the stream when ready
                         peer.on('stream', (stream: any) => {
                             setRemoteStreams((prevStreams: any) => [...prevStreams, {
                                 userID: userID,
@@ -340,6 +197,8 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                                 }
                             }, 2000);
                         })
+
+                        // Update the state
                         remotePeerRefs.current.push({
                             peerID: userID,
                             peer,
@@ -353,6 +212,7 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     setPeers(peersCopy);
                 })
 
+                // Mic/Camera control events
                 socket.on("muteMic", () => {
                     muteMic();
                     setIsMicMutedByAdmin(true);
@@ -372,7 +232,6 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     showCam();
                     setIsCameraHiddenByAdmin(false);
                 });
-
                 socket.on("cameraHiddenByUser", (id: any) => {
                     changeRemoteUsersControls('cameraHiddenByUser', id);
                 });
@@ -384,8 +243,6 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                 socket.on("micMutedByUser", (id: any) => {
                     changeRemoteUsersControls('micMutedByUser', id);
                 });
-
-
                 socket.on("micUnmutedByUser", (id: any) => {
                     changeRemoteUsersControls('micUnmutedByUser', id);
                 });
@@ -398,16 +255,19 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
             })
         }
 
+        // Send the user to the invite page if it's not the fist user (owner)
         if (!amOwner && !amInvited) {
             navigate("/inviter/" + roomID);
             return;
         }
 
+        // Join the chat room
         socket.emit("joinChat", {
             roomID: roomID,
             username: username
         });
 
+        // Obtain all the user present in this chat
         socket.once("allChatUsers", (data: any) => {
             const usersList: any[] = data.users;
             const myUser: any = data.myUser;
@@ -417,8 +277,8 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
             setNotPinnedUsers(usersList);
         });
 
+        // Init local video camera
         initCamera();
-
         setIsCameraInitialized(true);
     }, []);
 
@@ -426,6 +286,7 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
         socket.on("userJoined", handleUserJoined);
         socket.on("receivingReturnSignal", handleReceivingReturnSignal);
 
+        // Cleanup
         return () => {
             socket.off("userJoined", handleUserJoined);
             socket.off("receivingReturnSignal", handleReceivingReturnSignal);
@@ -436,7 +297,6 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     p.peer.destroy();
                     p.cleanup();
                 } catch (error) {
-                    setError("Error on destroy: " + error);
                     console.error("Error on destroy: ", error);
                 }
             });
@@ -447,9 +307,18 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
         };
     }, [handleUserJoined, handleReceivingReturnSignal]);
 
+    /**
+     * Creates a new peer (when I join the room)
+     * 
+     * @param userToSignalID 
+     * @param caller 
+     * @param stream 
+     * @returns 
+     */
     function createPeer(userToSignalID: any, caller: any, stream: any) {
         const callerID: any = caller.id;
 
+        // This is the connection request so 'initator: true'
         const peer = new SimplePeer({
             initiator: true,
             trickle: true,
@@ -459,17 +328,16 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
             }
         });
 
+        // Send the signal to the other peer
         const handleSignal = (signal: any) => {
             console.log("The new peer " + callerID + " sends an offer to " + userToSignalID);
             socket.emit("sendingSignal", { userToSignalID, caller, signal })
         };
-
         peer.on("signal", handleSignal);
 
         peer.on('error', (err) => {
             console.error('Peer error:', err);
         });
-
         const cleanup = () => {
             peer.off("signal", handleSignal);
         };
@@ -477,16 +345,21 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
         return { peer, cleanup };
     }
 
+    /**
+     * Add a new peer (when he joins the room)
+     * 
+     * @param incomingSignal 
+     * @param caller 
+     * @param stream 
+     * @returns 
+     */
     function addPeer(incomingSignal: any, caller: any, stream: any) {
         if (users.length >= MAX_USERS_NUM) {
             return;
         }
-
         const existingUser: any = users.find((user: any) => user.id === caller.id);
         console.log("Existing user 2: ", existingUser)
-
         const callerID = caller.id;
-
         const peer = new SimplePeer({
             initiator: false,
             trickle: true,
@@ -500,14 +373,13 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
             console.log("I answer the offer of " + callerID);
             socket.emit("returningSignal", { signal, caller })
         };
-
         peer.on("signal", handleSignal);
 
         peer.on('error', (err) => {
             console.error('Peer error:', err);
         });
 
-
+        // I signal the answer back to the initator
         peer.signal(incomingSignal);
 
         const cleanup = () => {
@@ -582,7 +454,6 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                 const updatedPeerRefs = remotePeerRefs.current.filter((p: any) => p.peerID !== id);
                 remotePeerRefs.current = updatedPeerRefs;
             } catch (error: any) {
-                setError("Error on destroy: " + error);
                 console.error("Error on destroy: ", error);
             }
         }
@@ -608,7 +479,6 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     }
 
     useEffect(() => {
-
         // Method called right before the browser tab is closed
         const handleBeforeUnload = (e: any) => {
             // If I'm the last user, delete all the messages in the room
@@ -770,7 +640,6 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     const shareVideo = (screenTrack: any) => {
         // Stop screen share if not already
         stopScreenShare();
-
         navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then((stream: any) => {
             // Change local stream track
             localStream.current = stream;
@@ -787,8 +656,8 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                     peer.streams[0]
                 );
             });
-
-
+        }).catch((error: any) => {
+            console.error(error);
         });
     };
 
@@ -817,6 +686,8 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                 setScreenShared(false);
             }
 
+        }).catch((error: any) => {
+            console.error(error);
         });
     };
 
@@ -848,11 +719,11 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     }
 
     const toggleVideoBlockedModal = () => {
-        setError("Your video has been blocked by the admin of the call");
+        fireError("Your video has been blocked by the admin of the call")
     }
 
     const toggleMicBlockedModal = () => {
-        setError("Your microphone has been blocked by the admin of the call")
+        fireError("Your microphone has been blocked by the admin of the call")
     }
 
     const handleMicrophoneBtnClick = () => {
@@ -1085,7 +956,6 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
                 myUser={myUser}
                 userColors={userColors}
             />
-            {!!error && <ErrorAlert message={error} onClose={() => { setError("") }} />}
         </div>
     )
 }

@@ -4,6 +4,7 @@ import ErrorAlert from '../errorAlert/ErrorAlert';
 import Modal from '../modal/Modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHand, faHandPeace } from '@fortawesome/free-solid-svg-icons'
+import { fireError } from '../../utils/appUtils';
 
 export default function RoomCreator({ onSubmit, onClose }: any) {
     const [error, setError] = useState<string>("");
@@ -21,12 +22,12 @@ export default function RoomCreator({ onSubmit, onClose }: any) {
     };
 
     const handleSubmit = () => {
-        if (formData.roomName.trim() === "") {
-            setError("Please, add a name for the room");
+        if (formData.username.trim() === "") {
+            fireError("Please, add a username")
             return;
         }
-        if (formData.username.trim() === "") {
-            setError("Please, add a username so that others can identify you.");
+        if (formData.roomName.trim() === "") {
+            fireError("Please, add a name for the room");
             return;
         }
 
@@ -56,7 +57,7 @@ export default function RoomCreator({ onSubmit, onClose }: any) {
                             <label htmlFor="roomName" style={{ marginTop: '10px' }}>Room name:</label>
                             <input name="roomName" type="text" id="roomName" value={formData.roomName} onChange={handleChange} />
                         </div>
-                        {!!error && <ErrorAlert message={error} onClose={() => { setError("") }} />}
+                        {/*  {!!error && <ErrorAlert message={error} onClose={() => { setError("") }} />} */}
                     </div>
                 )}
                 footer={(

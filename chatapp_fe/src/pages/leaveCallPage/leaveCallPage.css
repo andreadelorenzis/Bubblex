@@ -44,17 +44,16 @@
 }
 
 .leave__buttons>button {
-    margin: 0 10px;
+    margin: 0 5px;
 }
 
 .leave__buttons__home {
     background-color: #1c9dea;
     color: #fff;
-    width: 150px;
     height: 45px;
     padding: 10px 20px;
     border-radius: 8px;
-    width: 200px;
+    width: 180px;
 }
 
 .leave__buttons__home:hover {
@@ -65,11 +64,10 @@
     background-color: transparent;
     color: #1c9dea;
     border: 2px solid #1c9dea;
-    width: 150px;
     height: 45px;
     padding: 10px 20px;
     border-radius: 8px;
-    width: 200px;
+    width: 180px;
 }
 
 .leave__buttons__rejoin:hover {

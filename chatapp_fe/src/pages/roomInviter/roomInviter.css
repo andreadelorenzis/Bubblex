@@ -263,4 +263,8 @@
     }
 }
 
-@media (max-width: 600px) {}
+@media (max-width: 600px) {
+    .landing__nav__logo>h1 {
+        font-size: 25px;
+    }
+}
