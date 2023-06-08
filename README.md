@@ -12,7 +12,7 @@ Bubblex è un'applicazione di messaggistica con funzionalità di videochiamata e
 ### Creazione stanza
 
 <p align="center">
-    <img src="/img/create_room.jpg" width="400">
+    <img src="/img/create_room.jpg" width="700">
 </p> 
 
 ### Videocall + Chat
