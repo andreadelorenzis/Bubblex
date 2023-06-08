@@ -57,10 +57,10 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     const { roomname, username }: any = useParams();
     const roomID: string = roomname;
     const MAX_USERS_NUM = 4;
-    const videoConstraints = {
+    /* const videoConstraints = {
         height: window.innerHeight / 2,
         width: window.innerWidth / 2
-    };
+    }; */
 
     /**
      * Assign the stream to the local video
@@ -141,7 +141,7 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
          * Initialize the camera/mic permissions and assign the local stream
          */
         const initCamera = () => {
-            navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then((stream: any) => {
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream: any) => {
                 // Assign the local stream
                 localStream.current = stream;
 
@@ -640,7 +640,7 @@ export default function Videocall({ socket, amOwner, amInvited, initVideoValue, 
     const shareVideo = (screenTrack: any) => {
         // Stop screen share if not already
         stopScreenShare();
-        navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then((stream: any) => {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream: any) => {
             // Change local stream track
             localStream.current = stream;
             userVideo.current.srcObject = stream;

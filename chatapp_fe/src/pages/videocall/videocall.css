@@ -163,6 +163,13 @@
     width: 100%;
 }
 
+.videocall__videos__user-card__video {
+    background-color: white;
+    width: 100%;
+    overflow: hidden;
+    object-fit: cover;
+}
+
 .videocall__videos__user-card__menu {
     position: absolute;
     top: -168px;
