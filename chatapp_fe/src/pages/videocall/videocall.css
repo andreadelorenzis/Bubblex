@@ -58,7 +58,7 @@
     row-gap: 10px;
     column-gap: 20px;
     margin: 0 auto;
-    width: 100%;
+    /*  width: 100%; */
     /* Adjust the gap between rectangles as needed */
 }
 
@@ -90,7 +90,7 @@
 }
 
 .videocall--3 .videocall__videos__not-pinned--grid {
-    width: 100%;
+    /* width: 100%; */
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     justify-content: center;
@@ -120,7 +120,7 @@
 }
 
 .videocall--4 .videocall__videos__user-card {
-    max-width: 460px;
+    max-width: 560px;
 }
 
 .videocall__videos__user-card__video__container {
