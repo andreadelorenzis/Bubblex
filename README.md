@@ -17,23 +17,17 @@ Bubblex è un'applicazione di messaggistica con funzionalità di videochiamata e
 
 ### Videocall + Chat
 
-Monitora le tue attività tra diversi progetti.
-
 <p align="center">
     <img src="/img/videochat.jpg" width="700">
 </p> 
 
 ### Invito
 
-Crea, monitora e gestisci  i tuoi obiettivi personali.
-
 <p align="center">
     <img src="/img/invite.jpg" width="700">
 </p> 
 
 ### Terminazione
-
-Crea delle abitudini e controlla il tuo andamento. 
 
 <p align="center">
     <img src="/img/leave_call.jpg" width="700">
